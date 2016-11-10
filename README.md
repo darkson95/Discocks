@@ -23,5 +23,6 @@ Commands:
  - !yt stop - stops playing and clears queue
  - !yt queue - prints current queue
  - !yt now - prints current title
+ - !yt vol value - sets music volume (default value: 0.05)
  - !w YoutubeLink - get WatchTogether Link from sync-video.com
  - !insult username - insult username from datahamster.com/autoinsult
