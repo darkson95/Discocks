@@ -10,7 +10,7 @@ Environment variables
 Commands:
  - !help - print the manual
  - !shit str - print Mario shitting on your str
- - !ascii str - print str in Ascii-Art
+ - !ascii str - print str in Ascii-Art from artii.herokuapp.com
  - !yee - print yee-dinosaur
  - !coin - print tails or heads
  - !meme "memeName" ["topLine"] ["bottomLine"] - creates Meme on memegenerator.net with your options
@@ -26,3 +26,4 @@ Commands:
  - !yt vol value - sets music volume (default value: 0.05)
  - !w YoutubeLink - get WatchTogether Link from sync-video.com
  - !insult username - insult username from datahamster.com/autoinsult
+ - !compliment username - compliments username from http://emergencycompliment.com

@@ -10,6 +10,7 @@ var request = require('request');
 var parseString = require('xml2js').parseString;
 var stringSimilarity = require('string-similarity');
 var querystring = require('querystring');
+var cheerio = require('cheerio');
 
 var tttier = [];
 var ytQueue = [];
@@ -37,12 +38,12 @@ bot.on("message", msg => {
 	if (!msg.content.startsWith(prefix)) return;
 
 	if(msg.content.startsWith(prefix + "help")){
-		msg.reply('\n\n**!help** - print the manual\n**!shit *str*** - print Mario shitting on your *str*\n**!ascii *str*** - print *str* in Ascii-Art\n**!yee** - print yee-dinosaur\n**!coin** - print tails or heads\n**!meme "*memeName*" ["*topLine*"] ["*bottomLine*"]** - creates Meme on memegenerator.net with your options\n**!ttt** - print question/players and adds you to the playerlist\n**!ttt add [*userName*]** - adds you [or the username] to the playerlist\n**!ttt rm [*userName*]** - removes you [or the username] from the playerlist\n**!yt add *search*** - adds *search* to queue \n**!yt skip** - skips current song\n**!yt plause** - toggles between paused and playing\n**!yt stop** - stops playing and clears queue\n**!yt queue** - prints current queue\n**!yt now** - prints current title\n**!yt vol *value*** - sets music volume (default value: 0.05)\n**!w *YoutubeLink*** - get WatchTogether Link from sync-video.com\n**!insult *username*** - insult *username*\n');    
+		msg.reply('\n\n**!help** - print the manual\n**!shit *str*** - print Mario shitting on your *str*\n**!ascii *str*** - print *str* in Ascii-Art from artii.herokuapp.com\n**!yee** - print yee-dinosaur\n**!coin** - print tails or heads\n**!meme "*memeName*" ["*topLine*"] ["*bottomLine*"]** - creates Meme on memegenerator.net with your options\n**!ttt** - print question/players and adds you to the playerlist\n**!ttt add [*userName*]** - adds you [or the username] to the playerlist\n**!ttt rm [*userName*]** - removes you [or the username] from the playerlist\n**!yt add *search*** - adds *search* to queue \n**!yt skip** - skips current song\n**!yt plause** - toggles between paused and playing\n**!yt stop** - stops playing and clears queue\n**!yt queue** - prints current queue\n**!yt now** - prints current title\n**!yt vol *value*** - sets music volume (default value: 0.05)\n**!w *YoutubeLink*** - get WatchTogether Link from sync-video.com\n**!insult *username** - insults *username* from datahamster.com/autoinsult\n**!compliment *username*** - compliments *username* from http://emergencycompliment.com\n');    
 	}
 	else if (cmd.startsWith(prefix + "shit")) {
 		var str = "";
 
-		if(args.length == 0){
+		if(args.length == 0){*
 			str = "deine mudda";
 		}
 		else if(args.length > 0){
@@ -217,6 +218,7 @@ bot.on("message", msg => {
 			msg.channel.sendMessage("Aktueller Titel wurde von " + msg.author + " übersprungen.");
 		}
 		else if(func == "plause"){
+			if(ytCurrentDispatcher == null) return;
 			if(ytCurrentDispatcher.paused){
 				ytCurrentDispatcher.resume();
  				msg.channel.sendMessage("Musikwiedergabe wurde von " + msg.author + " fortgesetzt.");
@@ -286,6 +288,36 @@ bot.on("message", msg => {
 			var insult = data.xjx.cmd[0]._;
 			msg.channel.sendMessage(`${bestUser}, ` + insult);
 		});
+	}
+	else if(cmd.startsWith(prefix + "compliment")){
+		var user = args[0] || "Gioghurt";
+		var allUsersString = [];
+		var allUsers = {};
+
+		Array.from(msg.guild.members.array()).forEach(x => {
+			allUsersString.push(x.user.username);
+			allUsers[x.user.username] = x.user;
+		});
+
+		var best = stringSimilarity.findBestMatch(user, allUsersString);
+		var bestUser = allUsers[best.bestMatch.target];
+		
+		request({
+				url: 'https://spreadsheets.google.com/feeds/list/1eEa2ra2yHBXVZ_ctH4J15tFSGEu-VTSunsrvaCAV598/od6/public/values?alt=json',
+				json: true
+			}, function(err, res, body) {
+				if(err){
+					msg.reply('Error: ' + err);
+					return;
+				}
+
+				var compliments = body.feed.entry;
+
+				var int = Math.floor((Math.random() * compliments.length));
+				var compliment = body.feed.entry[int].title.$t;
+	
+				msg.channel.sendMessage(`${bestUser}, ` + compliment);
+			});
 	}
 });
 
