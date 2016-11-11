@@ -42,7 +42,7 @@ bot.on("message", msg => {
 	}
 	else if(prefix + "info"){
 		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
-		msg.reply('\n\nIf you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: discocks@wurstkun.com\n- Repository: https://github.com/darkson95/Discocks\n- ``!commands`` - prints all commands\n\n- Bot-Uptime: ' + ut + '\n');
+		msg.reply('\n\nIf you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: discocks@wurstkun.com\n- Repository: https://github.com/darkson95/Discocks\n- ``!commands`` - prints all commands\n- Bot-Uptime: ' + ut + '\n');
 	}
 	else if (cmd.startsWith(prefix + "shit")) {
 		var str = "";
