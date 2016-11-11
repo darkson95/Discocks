@@ -10,10 +10,10 @@ Environment variables
 Commands:
  - !help - print the manual
  - !shit str - print Mario shitting on your str
- - !ascii str - print str in Ascii-Art from artii.herokuapp.com
+ - !ascii str - print str in Ascii-Art from http://artii.herokuapp.com
  - !yee - print yee-dinosaur
  - !coin - print tails or heads
- - !meme "memeName" ["topLine"] ["bottomLine"] - creates Meme on memegenerator.net with your options
+ - !meme "memeName" ["topLine"] ["bottomLine"] - creates Meme on http://memegenerator.net with your options
  - !ttt - print question/players and adds you to the playerlist
  - !ttt add [userName] - adds you [or the username] to the playerlist
  - !ttt rm [userName] - removes you [or the username] from the playerlist
@@ -24,6 +24,6 @@ Commands:
  - !yt queue - prints current queue
  - !yt now - prints current title
  - !yt vol value - sets music volume (default value: 0.05)
- - !w YoutubeLink - get WatchTogether Link from sync-video.com
- - !insult username - insult username from datahamster.com/autoinsult
+ - !w YoutubeLink - get WatchTogether Link from http://sync-video.com
+ - !insult username - insult username from http://datahamster.com/autoinsult
  - !compliment username - compliments username from http://emergencycompliment.com

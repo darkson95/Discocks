@@ -10,7 +10,7 @@ var request = require('request');
 var parseString = require('xml2js').parseString;
 var stringSimilarity = require('string-similarity');
 var querystring = require('querystring');
-var cheerio = require('cheerio');
+var humanizeDuration = require('humanize-duration')
 
 var tttier = [];
 var ytQueue = [];
@@ -20,7 +20,7 @@ var ytCurrentDispatcher = null;
 bot.login(process.env.DBOTTOKEN);
 
 bot.on('ready', () => {
-	var game = new Discord.Game({name : "!help", type : 1});
+	var game = new Discord.Game({name : "!info", type : 1});
 	var pres = new Discord.Presence({status : "online", game : game});
 
 	bot.user.setPresence(pres);
@@ -37,13 +37,17 @@ bot.on("message", msg => {
 	if (msg.author.bot) return;
 	if (!msg.content.startsWith(prefix)) return;
 
-	if(msg.content.startsWith(prefix + "help")){
-		msg.reply('\n\n**!help** - print the manual\n**!shit *str*** - print Mario shitting on your *str*\n**!ascii *str*** - print *str* in Ascii-Art from artii.herokuapp.com\n**!yee** - print yee-dinosaur\n**!coin** - print tails or heads\n**!meme "*memeName*" ["*topLine*"] ["*bottomLine*"]** - creates Meme on memegenerator.net with your options\n**!ttt** - print question/players and adds you to the playerlist\n**!ttt add [*userName*]** - adds you [or the username] to the playerlist\n**!ttt rm [*userName*]** - removes you [or the username] from the playerlist\n**!yt add *search*** - adds *search* to queue \n**!yt skip** - skips current song\n**!yt plause** - toggles between paused and playing\n**!yt stop** - stops playing and clears queue\n**!yt queue** - prints current queue\n**!yt now** - prints current title\n**!yt vol *value*** - sets music volume (default value: 0.05)\n**!w *YoutubeLink*** - get WatchTogether Link from sync-video.com\n**!insult *username** - insults *username* from datahamster.com/autoinsult\n**!compliment *username*** - compliments *username* from http://emergencycompliment.com\n');    
+	if(msg.content.startsWith(prefix + "commands")){
+		msg.reply('\n\n**!info** - prints general information\n**!shit *str*** - prints Mario shitting on your *str*\n**!ascii *str*** - prints *str* in Ascii-Art from http://artii.herokuapp.com\n**!yee** - prints yee-dinosaur\n**!coin** - prints tails or heads\n**!meme "*memeName*" ["*topLine*"] ["*bottomLine*"]** - creates Meme on http://memegenerator.net with your options\n**!ttt** - print question/players and adds you to the playerlist\n**!ttt add [*userName*]** - adds you [or the username] to the playerlist\n**!ttt rm [*userName*]** - removes you [or the username] from the playerlist\n**!yt add *search*** - adds *search* to queue \n**!yt skip** - skips current song\n**!yt plause** - toggles between paused and playing\n**!yt stop** - stops playing and clears queue\n**!yt queue** - prints current queue\n**!yt now** - prints current title\n**!yt vol *value*** - sets music volume (default value: 0.05)\n**!w *YoutubeLink*** - get WatchTogether Link from http://sync-video.com\n**!insult *username** - insults *username* from http://datahamster.com/autoinsult\n**!compliment *username*** - compliments *username* from http://emergencycompliment.com\n');    
+	}
+	else if(prefix + "info"){
+		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
+		msg.reply('\n\nIf you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: discocks@wurstkun.com\n- Repository: https://github.com/darkson95/Discocks\n- ``!commands`` - prints all commands\n\n- Bot-Uptime: ' + ut + '\n');
 	}
 	else if (cmd.startsWith(prefix + "shit")) {
 		var str = "";
 
-		if(args.length == 0){*
+		if(args.length == 0){
 			str = "deine mudda";
 		}
 		else if(args.length > 0){
