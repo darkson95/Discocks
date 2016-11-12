@@ -8,13 +8,14 @@ Environment variables
  - MEMEPW - Menegenerator.net Password
 
 Commands:
- - !help - print the manual
- - !shit str - print Mario shitting on your str
- - !ascii str - print str in Ascii-Art from http://artii.herokuapp.com
- - !yee - print yee-dinosaur
- - !coin - print tails or heads
+ - !info - prints bot informations
+ - !commands - prints all the commands
+ - !shit str - prints Mario shitting on your str
+ - !ascii str - prints str in Ascii-Art from http://artii.herokuapp.com
+ - !yee - prints yee-dinosaur
+ - !coin - prints tails or heads
  - !meme "memeName" ["topLine"] ["bottomLine"] - creates Meme on http://memegenerator.net with your options
- - !ttt - print question/players and adds you to the playerlist
+ - !ttt - prints question/players and adds you to the playerlist
  - !ttt add [userName] - adds you [or the username] to the playerlist
  - !ttt rm [userName] - removes you [or the username] from the playerlist
  - !yt add search - adds search to queue 
