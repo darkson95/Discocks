@@ -121,7 +121,7 @@ bot.on("message", msg => {
 			json: true,
 		}, function(err, res, body) {
 			if(err){
-				msg.reply('Error: ' + err);
+				msg.reply('Error: (request-search)' + err);
 				return;
 			}
 			else if(body.result.length == 0){
@@ -143,7 +143,7 @@ bot.on("message", msg => {
 				json: true,
 			}, function(err, res, body) {
 				if(err){
-					msg.reply('Error: ' + err);
+					msg.reply('Error: (request-gen)' + err);
 					return;
 				}
 
@@ -152,7 +152,7 @@ bot.on("message", msg => {
 					msg.delete();
 				}
 				else {
-					msg.reply('Error: ' + body.error_message);
+					msg.reply('Error: (body.success)' + JSON.stringify(body, null, 1));
 				}
 			});
 		});
@@ -236,6 +236,7 @@ bot.on("message", msg => {
  			var con = bot.voiceConnections.first();
 
  			if(con){
+ 				ytQueue = [];
  				con.disconnect();
  				msg.channel.sendMessage("Musikwiedergabe wurde von " + msg.author + " gestoppt.");
  			}
@@ -353,7 +354,7 @@ function playStream(connection, msg) {
 		var stream = ytdl(vid.url, {filter : 'audioonly'});
 		ytCurrentDispatcher = connection.playStream(stream, streamOptions);
 
-		msg.reply("Aktuelle Wiedergabe: " + vid.title);
+		msg.channel.sendMessage("Aktuelle Wiedergabe: " + vid.title);
 		ytNowPlaying = vid.title;
 
 		ytCurrentDispatcher.on('end', () => {
@@ -368,7 +369,7 @@ function playStream(connection, msg) {
 }
 
 function startStream(msg) {
-	for (var channel of msg.channel.guild.channels) {
+	for (var channel of bot.guilds.first().channels) {
 		if(channel[1].name == "General" && channel[1].type == "voice"){
 			channel[1]
 				.join()
