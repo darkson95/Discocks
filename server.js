@@ -35,6 +35,10 @@ bot.on("message", msg => {
 	args = args.filter(a => a !== cmd);
 
 	if (msg.author.bot) return;
+	if (!msg.guild) {
+		msg.reply('Please send Message in Guild!');
+		return;
+	}
 	if (!msg.content.startsWith(prefix)) return;
 
 	if(msg.content.startsWith(prefix + "commands")){
