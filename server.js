@@ -295,7 +295,7 @@ bot.on("message", msg => {
 
 		xmlToJson("http://datahamster.com/autoinsult/scripts/webinsult.server.php?xajax=generate_insult&xajaxargs[]=" + int, (err, data) => {
 			var insult = data.xjx.cmd[0]._;
-			msg.channel.sendMessage(`${bestUser}, ` + insult);
+			msg.channel.sendMessage(`${bestUser}, ` + insult, {tts: true});
 		});
 	}
 	else if(cmd.startsWith(prefix + "compliment")){
@@ -325,7 +325,7 @@ bot.on("message", msg => {
 				var int = Math.floor((Math.random() * compliments.length));
 				var compliment = body.feed.entry[int].title.$t;
 	
-				msg.channel.sendMessage(`${bestUser}, ` + compliment);
+				msg.channel.sendMessage(`${bestUser}, ` + compliment, {tts: true});
 			});
 	}
 });
