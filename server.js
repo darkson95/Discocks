@@ -31,7 +31,7 @@ bot.on('ready', () => {
 bot.on("message", msg => {
 	var prefix = "!";
 	var args = stringArgv.parseArgsStringToArgv(msg.content);
-	var cmd = args[0] || "";
+	var cmd = args[0].toLowerCase() || "";
 	args = args.filter(a => a !== cmd);
 
 	if (msg.author.bot) return;
@@ -39,9 +39,9 @@ bot.on("message", msg => {
 		msg.reply('Please send Message in Guild!');
 		return;
 	}
-	if (!msg.content.startsWith(prefix)) return;
+	if (!cmd.startsWith(prefix)) return;
 
-	if(msg.content.startsWith(prefix + "commands")){
+	if(cmd.startsWith(prefix + "commands")){
 		msg.reply('\n\n**!info** - prints general information\n**!shit *str*** - prints Mario shitting on your *str*\n**!ascii *str*** - prints *str* in Ascii-Art from http://artii.herokuapp.com\n**!yee** - prints yee-dinosaur\n**!coin** - prints tails or heads\n**!meme "*memeName*" ["*topLine*"] ["*bottomLine*"]** - creates Meme on http://memegenerator.net with your options\n**!ttt** - print question/players and adds you to the playerlist\n**!ttt add [*userName*]** - adds you [or the username] to the playerlist\n**!ttt rm [*userName*]** - removes you [or the username] from the playerlist\n**!yt add *search*** - adds *search* to queue \n**!yt skip** - skips current song\n**!yt plause** - toggles between paused and playing\n**!yt stop** - stops playing and clears queue\n**!yt queue** - prints current queue\n**!yt now** - prints current title\n**!yt vol *value*** - sets music volume (default value: 0.05)\n**!w *YoutubeLink*** - get WatchTogether Link from http://sync-video.com\n**!insult *username** - insults *username* from http://datahamster.com/autoinsult\n**!compliment *username*** - compliments *username* from http://emergencycompliment.com\n');    
 	}
 	else if(cmd.startsWith(prefix + "info")){
@@ -165,28 +165,30 @@ bot.on("message", msg => {
 		var func = args[0] || "";
 		var usr = args[1] || msg.author.username;
 
+		msg.delete();
+		var msgs = Array.from(msg.channel.messages.values());
+		msgs = msgs.filter(x => x.author.username == bot.user.username && x.content.startsWith('Lust'));
+		if(msgs.length > 0){
+			msgs.forEach(x => x.delete());
+		}
+		
 		if(func == "add"){
 			if(tttier.indexOf(usr) == -1){
 				tttier.push(usr);
-				msg.delete();
 				msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printArray(tttier));
 			}
 		}
 		else if(func == "rm"){
 			tttier = tttier.filter(e => e !== usr);
-			msg.delete();
 			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printArray(tttier));
 		}
 		else if(func == "clear"){
 			tttier = [];
-			msg.delete();
-			msg.channel.sendMessage("TTT-Liste wurde geleert.");
 		}
 		else {
 			if(tttier.indexOf(usr) == -1){
 				tttier.push(msg.author.username);
 			}
-			msg.delete();
 			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printArray(tttier));
 		}
 	}
