@@ -31,7 +31,10 @@ bot.on('ready', () => {
 bot.on("message", msg => {
 	var prefix = "!";
 	var args = stringArgv.parseArgsStringToArgv(msg.content);
-	var cmd = args[0].toLowerCase() || "";
+	var cmd = "";
+	if(args != undefined && args.length > 0){
+		var cmd = args[0].toLowerCase();
+	}
 	args = args.filter(a => a !== cmd);
 
 	if (msg.author.bot) return;
