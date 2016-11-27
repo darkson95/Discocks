@@ -42,7 +42,7 @@ bot.on("message", msg => {
 	}
 	args = args.filter(a => a !== cmd);
 
-	if(msg.channel.name == "music"){
+	if(msg.channel.name == "dev"){
 
 		if(msg.content.includes("youtu")){
 			var match = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/.exec(msg.content);
@@ -52,43 +52,44 @@ bot.on("message", msg => {
 				if(id != undefined && id.length > 0){
 					id = id[1];
 
-					Youtube.search.list(
+					console.log(id);
+					
+					var req = Youtube.playlistItems.list(
 					{
-						part: "snippet",
-						q: id
+						part: "snippet", 
+						playlistId: process.env.YTPLAYLISTID
 					}, 
 					(err, data) => {
-						if (err) throw err;
+						if (err){
+							msg.reply(err);
+							return;
+						}
 
-						var video = data.items[0];
+						var ids = [];
 
-						var req = Youtube.playlistItems.list(
-						{
-							part: "snippet", 
-							playlistId: process.env.YTPLAYLISTID
-						}, 
-						(err, data) => {
-							if (err) throw err;
-							var ids = [];
+						data.items.forEach(i => {
+							ids.push(i.snippet.resourceId.videoId);
+						});
 
-							data.items.forEach(i => {
-								ids.push(i.snippet.resourceId.videoId);
-							});
-
-							if(ids.indexOf(video.id.videoId) == -1){
-								Youtube.playlistItems.insert({
-									part: "snippet",
-									resource: {
-										snippet: {
-											playlistId: process.env.YTPLAYLISTID,
-											resourceId: video.id
+						if(ids.indexOf(id) == -1){
+							Youtube.playlistItems.insert({
+								part: "snippet",
+								resource: {
+									snippet: {
+										playlistId: process.env.YTPLAYLISTID,
+										resourceId: {
+											kind: "youtube#video",
+											videoId: id
 										}
 									}
-								}, (err, data) => {
-									if (err) throw err;
-								});
-							}
-						});
+								}
+							}, (err, data) => {
+								if (err){
+									msg.reply(err);
+									return;
+								}
+							});
+						}
 					});
 				}
 			}
@@ -276,7 +277,10 @@ bot.on("message", msg => {
 					q: search
 				}, 
 				(err, data) => {
-					if (err) throw err;
+					if (err){
+						msg.reply(err);
+						return;
+					}
 
 					var videoResult = data.items[0];
 					var videoURL = "https://youtube.com/watch?v=" + videoResult.id.videoId;
