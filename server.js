@@ -4,7 +4,7 @@ var request = require('request');
 var stringArgv = require('string-argv');
 var Youtube = require("youtube-api");
 Youtube.authenticate({
-    type: "oauth"
+    type: "oauth",
   	refresh_token: process.env.YTREFRESHTOKEN,
   	client_id: process.env.YTCLIENTID,
   	client_secret: process.env.YTCLIENTSECRET,
