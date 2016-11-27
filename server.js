@@ -5,10 +5,10 @@ var stringArgv = require('string-argv');
 var Youtube = require("youtube-api");
 Youtube.authenticate({
     type: "oauth"
-  	refresh_token: process.env.REFRESHTOKEN,
-  	client_id: process.env.CLIENTID,
-  	client_secret: process.env.CLIENTSECRET,
-  	redirect_url: process.env.REDIRECTURL
+  	refresh_token: process.env.YTREFRESHTOKEN,
+  	client_id: process.env.YTCLIENTID,
+  	client_secret: process.env.YTCLIENTSECRET,
+  	redirect_url: process.env.YTREDIRECTURL
 });
 var ytdl = require('ytdl-core');
 var request = require('request');
