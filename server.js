@@ -49,48 +49,48 @@ bot.on("message", msg => {
 
 			if(match != undefined && match.length > 0){
 				var id = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i.exec(match[0])
-				id = id[1];
+				if(id != undefined && id.length > 0){
+					id = id[1];
 
-				Youtube.search.list(
-				{
-					part: "snippet",
-					q: id
-				}, 
-				(err, data) => {
-					if (err) throw err;
-
-					var video = data.items[0];
-
-					var req = Youtube.playlistItems.list(
+					Youtube.search.list(
 					{
-						part: "snippet", 
-						playlistId: process.env.YTPLAYLISTID
+						part: "snippet",
+						q: id
 					}, 
 					(err, data) => {
 						if (err) throw err;
-						var ids = [];
 
-						data.items.forEach(i => {
-							ids.push(i.snippet.resourceId.videoId);
-						});
+						var video = data.items[0];
 
-						if(ids.indexOf(video.id.videoId) == -1){
-							Youtube.playlistItems.insert({
-								part: "snippet",
-								resource: {
-									snippet: {
-										playlistId: process.env.YTPLAYLISTID,
-										resourceId: video.id
-									}
-								}
-							}, (err, data) => {
-								if (err) throw err;
-								console.log(video);
-								msg.reply(video.snippet.title + " added to Playlist!");
+						var req = Youtube.playlistItems.list(
+						{
+							part: "snippet", 
+							playlistId: process.env.YTPLAYLISTID
+						}, 
+						(err, data) => {
+							if (err) throw err;
+							var ids = [];
+
+							data.items.forEach(i => {
+								ids.push(i.snippet.resourceId.videoId);
 							});
-						}
+
+							if(ids.indexOf(video.id.videoId) == -1){
+								Youtube.playlistItems.insert({
+									part: "snippet",
+									resource: {
+										snippet: {
+											playlistId: process.env.YTPLAYLISTID,
+											resourceId: video.id
+										}
+									}
+								}, (err, data) => {
+									if (err) throw err;
+								});
+							}
+						});
 					});
-				});
+				}
 			}
 		}
 	}
