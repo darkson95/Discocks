@@ -42,55 +42,54 @@ bot.on("message", msg => {
 	}
 	args = args.filter(a => a !== cmd);
 
-	if(msg.channel.name == "dev"){
+	if(msg.channel.name == "music"){
+		if(msg.author.username != "Skillhollow"){
+			if(msg.content.includes("youtu")){
+				var match = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/.exec(msg.content);
 
-		if(msg.content.includes("youtu")){
-			var match = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/.exec(msg.content);
+				if(match != undefined && match.length > 0){
+					var id = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i.exec(match[0])
+					if(id != undefined && id.length > 0){
+						id = id[1];
+						
+						var req = Youtube.playlistItems.list(
+						{
+							part: "snippet", 
+							playlistId: process.env.YTPLAYLISTID
+						}, 
+						(err, data) => {
+							if (err){
+								msg.reply(err);
+								return;
+							}
 
-			if(match != undefined && match.length > 0){
-				var id = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i.exec(match[0])
-				if(id != undefined && id.length > 0){
-					id = id[1];
+							var ids = [];
 
-					console.log(id);
-					
-					var req = Youtube.playlistItems.list(
-					{
-						part: "snippet", 
-						playlistId: process.env.YTPLAYLISTID
-					}, 
-					(err, data) => {
-						if (err){
-							msg.reply(err);
-							return;
-						}
+							data.items.forEach(i => {
+								ids.push(i.snippet.resourceId.videoId);
+							});
 
-						var ids = [];
-
-						data.items.forEach(i => {
-							ids.push(i.snippet.resourceId.videoId);
-						});
-
-						if(ids.indexOf(id) == -1){
-							Youtube.playlistItems.insert({
-								part: "snippet",
-								resource: {
-									snippet: {
-										playlistId: process.env.YTPLAYLISTID,
-										resourceId: {
-											kind: "youtube#video",
-											videoId: id
+							if(ids.indexOf(id) == -1){
+								Youtube.playlistItems.insert({
+									part: "snippet",
+									resource: {
+										snippet: {
+											playlistId: process.env.YTPLAYLISTID,
+											resourceId: {
+												kind: "youtube#video",
+												videoId: id
+											}
 										}
 									}
-								}
-							}, (err, data) => {
-								if (err){
-									msg.reply(err);
-									return;
-								}
-							});
-						}
-					});
+								}, (err, data) => {
+									if (err){
+										msg.reply(err);
+										return;
+									}
+								});
+							}
+						});
+					}
 				}
 			}
 		}
