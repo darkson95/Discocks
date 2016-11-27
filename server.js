@@ -2,9 +2,14 @@ var Discord = require("discord.js");
 var bot = new Discord.Client();
 var request = require('request');
 var stringArgv = require('string-argv');
-var YouTube = require('youtube-node');
-var youTube = new YouTube();
-youTube.setKey(process.env.YTAPITOKEN);
+var Youtube = require("youtube-api");
+Youtube.authenticate({
+    type: "oauth"
+  	refresh_token: process.env.REFRESHTOKEN,
+  	client_id: process.env.CLIENTID,
+  	client_secret: process.env.CLIENTSECRET,
+  	redirect_url: process.env.REDIRECTURL
+});
 var ytdl = require('ytdl-core');
 var request = require('request');
 var parseString = require('xml2js').parseString;
@@ -37,6 +42,59 @@ bot.on("message", msg => {
 	}
 	args = args.filter(a => a !== cmd);
 
+	if(msg.channel.name == "music"){
+
+		if(msg.content.includes("youtu")){
+			var match = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/.exec(msg.content);
+
+			if(match != undefined && match.length > 0){
+				var id = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i.exec(match[0])
+				id = id[1];
+
+				Youtube.search.list(
+				{
+					part: "snippet",
+					q: id
+				}, 
+				(err, data) => {
+					if (err) throw err;
+
+					var video = data.items[0];
+
+					var req = Youtube.playlistItems.list(
+					{
+						part: "snippet", 
+						playlistId: process.env.YTPLAYLISTID
+					}, 
+					(err, data) => {
+						if (err) throw err;
+						var ids = [];
+
+						data.items.forEach(i => {
+							ids.push(i.snippet.resourceId.videoId);
+						});
+
+						if(ids.indexOf(video.id.videoId) == -1){
+							Youtube.playlistItems.insert({
+								part: "snippet",
+								resource: {
+									snippet: {
+										playlistId: process.env.YTPLAYLISTID,
+										resourceId: video.id
+									}
+								}
+							}, (err, data) => {
+								if (err) throw err;
+								console.log(video);
+								msg.reply(video.snippet.title + " added to Playlist!");
+							});
+						}
+					});
+				});
+			}
+		}
+	}
+
 	if (msg.author.bot) return;
 	if (!msg.guild) {
 		msg.reply('Please send Message in Guild!');
@@ -49,7 +107,7 @@ bot.on("message", msg => {
 	}
 	else if(cmd.startsWith(prefix + "info")){
 		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
-		msg.reply('\n\nIf you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: discocks@wurstkun.com\n- Repository: https://github.com/darkson95/Discocks\n- ``!commands`` - prints all commands\n- Bot-Uptime: ' + ut + '\n');
+		msg.reply('\n\nIf you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: discocks@wurstkun.com\n- Repository: https://github.com/darkson95/Discocks\n- ``!commands`` - prints all commands\n- Bot-Uptime: ' + ut + '\n- Youtubeplaylist: https://www.youtube.com/playlist?list=' + process.env.YTPLAYLISTID + '\n');
 	}
 	else if (cmd.startsWith(prefix + "shit")) {
 		var str = "";
@@ -212,15 +270,21 @@ bot.on("message", msg => {
 				});
 			}
 
-			youTube.search(search, 2, function(error, result) {
-			  	if (error) throw error;
+			Youtube.search.list(
+				{
+					part: "snippet",
+					q: search
+				}, 
+				(err, data) => {
+					if (err) throw err;
 
-				var videoResult = result.items[0];
-				var videoURL = "https://youtube.com/watch?v=" + videoResult.id.videoId;
+					var videoResult = data.items[0];
+					var videoURL = "https://youtube.com/watch?v=" + videoResult.id.videoId;
 
-				ytQueue.push({title : videoResult.snippet.title, url : videoURL});
-				msg.channel.sendMessage(videoResult.snippet.title + " wurde in die Warteschlange von " + msg.author + " hinzugefügt");
-			});
+					ytQueue.push({title : videoResult.snippet.title, url : videoURL});
+					msg.channel.sendMessage(videoResult.snippet.title + " wurde in die Warteschlange von " + msg.author + " hinzugefügt");
+
+				});
 
 			if(bot.voiceConnections.first() == undefined){
 				startStream(msg);
