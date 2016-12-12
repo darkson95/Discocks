@@ -1,5 +1,7 @@
 var Discord = require("discord.js");
 var bot = new Discord.Client();
+var kieling = new Discord.Client();
+var flussbachenbestandskontroloer = new Discord.Client();
 var request = require('request');
 var stringArgv = require('string-argv');
 var Youtube = require("youtube-api");
@@ -23,6 +25,8 @@ var ytNowPlaying = "";
 var ytCurrentDispatcher = null;
 
 bot.login(process.env.DBOTTOKEN);
+kieling.login(process.env.KIELINGTOKEN);
+flussbachenbestandskontroloer.login(process.env.FLUSSBACHENBESTANDSKONTROLOERTOKEN);
 
 bot.on('ready', () => {
 	var game = new Discord.Game({name : "!info", type : 1});
@@ -474,17 +478,10 @@ function xmlToJson(url, callback) {
 	});
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-
-var kieling = new Discord.Client();
-var flussbachenbestandskontroloer = new Discord.Client();
-var trigger = false;
+var gioghurt = false;
 var counter = 0;
-
-kieling.login(process.env.KIELINGTOKEN);
-flussbachenbestandskontroloer.login(process.env.FLUSSBACHENBESTANDSKONTROLOERTOKEN);
 
 kieling.on('ready', () => {
 	var game = new Discord.Game({name : "mit Cleo", type : 1});
@@ -498,20 +495,20 @@ kieling.on('ready', () => {
 kieling.on("message", msg => {
 
 	if(msg.content.startsWith("!kieling")){
-		trigger = true;
+		gioghurt = true;
 		ja(msg.channel);
 	}
 	else if(msg.content.startsWith("!maggi")){
-		trigger = false;
+		gioghurt = false;
 	}
-	else if(msg.content.startsWith("Die lebt!") && msg.author.username.includes("Flussbachenbestandskontrolör") && trigger){
+	else if(msg.content.startsWith("Die lebt!") && msg.author.username.includes("Flussbachenbestandskontrolör") && gioghurt){
 		if(counter < 3){
 			setTimeout(function(){
 				ja(msg.channel);
 			}, 3750);
 		}
 		else {
-			trigger = false;
+			gioghurt = false;
 			counter = 0;
 		}
 	}
