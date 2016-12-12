@@ -473,3 +473,73 @@ function xmlToJson(url, callback) {
 		}
 	});
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+
+var kieling = new Discord.Client();
+var flussbachenbestandskontroloer = new Discord.Client();
+var trigger = false;
+var counter = 0;
+
+kieling.login(process.env.KIELINGTOKEN);
+flussbachenbestandskontroloer.login(process.env.FLUSSBACHENBESTANDSKONTROLOERTOKEN);
+
+kieling.on('ready', () => {
+	var game = new Discord.Game({name : "mit Cleo", type : 1});
+	var pres = new Discord.Presence({status : "online", game : game});
+
+	kieling.user.setPresence(pres);
+
+	console.log('kieling is ready!');
+});
+
+kieling.on("message", msg => {
+
+	if(msg.content.startsWith("!kieling")){
+		trigger = true;
+		ja(msg.channel);
+	}
+	else if(msg.content.startsWith("!maggi")){
+		trigger = false;
+	}
+	else if(msg.content.startsWith("Die lebt!") && msg.author.username.includes("Flussbachenbestandskontrolör") && trigger){
+		if(counter < 3){
+			setTimeout(function(){
+				ja(msg.channel);
+			}, 3750);
+		}
+		else {
+			trigger = false;
+			counter = 0;
+		}
+	}
+
+});
+
+flussbachenbestandskontroloer.on('ready', () => {
+	var game = new Discord.Game({name : "Spastkiste", type : 1});
+	var pres = new Discord.Presence({status : "online", game : game});
+
+	flussbachenbestandskontroloer.user.setPresence(pres);
+
+	console.log('flussbachenbestandskontroloer is ready!');
+});
+
+flussbachenbestandskontroloer.on("message", msg => {
+
+	if(msg.content.startsWith("Ja!") && msg.author.username.includes("Andreas Kieling")){
+
+		setTimeout(function(){
+			msg.channel.sendMessage("Die lebt!", {tts: true});
+		}, 3000);
+
+	}
+});
+
+
+function ja(channel) {
+	channel.sendMessage('Ja!', {tts: true});
+	counter++;
+}
