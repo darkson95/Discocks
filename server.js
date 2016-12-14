@@ -2,6 +2,7 @@ var Discord = require("discord.js");
 var bot = new Discord.Client();
 var kieling = new Discord.Client();
 var flussbachenbestandskontroloer = new Discord.Client();
+var lahnsteiner = new Discord.Client();
 var request = require('request');
 var stringArgv = require('string-argv');
 var Youtube = require("youtube-api");
@@ -24,9 +25,13 @@ var ytQueue = [];
 var ytNowPlaying = "";
 var ytCurrentDispatcher = null;
 
+var gioghurt = false;
+var counter = 0;
+
 bot.login(process.env.DBOTTOKEN);
 kieling.login(process.env.KIELINGTOKEN);
 flussbachenbestandskontroloer.login(process.env.FLUSSBACHENBESTANDSKONTROLOERTOKEN);
+lahnsteiner.login(process.env.LAHNSTEINERTOKEN);
 
 bot.on('ready', () => {
 	var game = new Discord.Game({name : "!info", type : 1});
@@ -35,6 +40,33 @@ bot.on('ready', () => {
 	bot.user.setPresence(pres);
 
 	console.log('I am ready!');
+});
+
+kieling.on('ready', () => {
+	var game = new Discord.Game({name : "mit Cleo", type : 1});
+	var pres = new Discord.Presence({status : "online", game : game});
+
+	kieling.user.setPresence(pres);
+
+	console.log('kieling is ready!');
+});
+
+flussbachenbestandskontroloer.on('ready', () => {
+	var game = new Discord.Game({name : "Spastkiste", type : 1});
+	var pres = new Discord.Presence({status : "online", game : game});
+
+	flussbachenbestandskontroloer.user.setPresence(pres);
+
+	console.log('flussbachenbestandskontroloer is ready!');
+});
+
+lahnsteiner.on('ready', () => {
+	var game = new Discord.Game({name : "420 blaze it", type : 1});
+	var pres = new Discord.Presence({status : "online", game : game});
+
+	lahnsteiner.user.setPresence(pres);
+
+	console.log('lahnsteiner is ready!');
 });
 
 bot.on("message", msg => {
@@ -480,18 +512,6 @@ function xmlToJson(url, callback) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-var gioghurt = false;
-var counter = 0;
-
-kieling.on('ready', () => {
-	var game = new Discord.Game({name : "mit Cleo", type : 1});
-	var pres = new Discord.Presence({status : "online", game : game});
-
-	kieling.user.setPresence(pres);
-
-	console.log('kieling is ready!');
-});
-
 kieling.on("message", msg => {
 
 	if(msg.content.startsWith("!kieling")){
@@ -515,15 +535,6 @@ kieling.on("message", msg => {
 
 });
 
-flussbachenbestandskontroloer.on('ready', () => {
-	var game = new Discord.Game({name : "Spastkiste", type : 1});
-	var pres = new Discord.Presence({status : "online", game : game});
-
-	flussbachenbestandskontroloer.user.setPresence(pres);
-
-	console.log('flussbachenbestandskontroloer is ready!');
-});
-
 flussbachenbestandskontroloer.on("message", msg => {
 
 	if(msg.content.startsWith("Ja!") && msg.author.username.includes("Andreas Kieling")){
@@ -540,3 +551,15 @@ function ja(channel) {
 	channel.sendMessage('Ja!', {tts: true});
 	counter++;
 }
+
+
+/////////////////////////////////////////////////
+
+
+
+lahnsteiner.on("message", msg => {
+
+	if(msg.content.toUpperCase().startsWith("WIE DER LAHNSTEINER SAGEN WÜRDE")){
+		msg.channel.sendMessage("Korrekt!", {tts: true});
+	}
+});
