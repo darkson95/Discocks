@@ -559,7 +559,7 @@ function ja(channel) {
 
 lahnsteiner.on("message", msg => {
 
-	if(msg.content.toUpperCase().startsWith("WIE DER LAHNSTEINER SAGEN WÜRDE")){
+	if(msg.content.toUpperCase().startsWith("WIE DER LAHNSTEINER ZU SAGEN PFLEGT")){
 		msg.channel.sendMessage("Korrekt!", {tts: true});
 	}
 });
