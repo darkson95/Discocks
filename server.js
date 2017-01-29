@@ -266,12 +266,12 @@ bot.on("message", msg => {
 		if(func == "add"){
 			if(tttier.indexOf(usr) == -1){
 				tttier.push(usr);
-				msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printArray(tttier));
+				msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
 			}
 		}
 		else if(func == "rm"){
 			tttier = tttier.filter(e => e.name !== usr);
-			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printArray(tttier));
+			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
 		}
 		else if(func == "clear"){
 			tttier = [];
@@ -280,7 +280,7 @@ bot.on("message", msg => {
 			if(tttier.indexOf(usr) == -1){
 				tttier.push(usr);
 			}
-			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printArray(tttier));
+			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
 		}
 	}
 	else if(cmd.startsWith(prefix + "insult")){
@@ -334,10 +334,11 @@ bot.on("message", msg => {
 	}
 });
 
-function printArray(arr) {
+function printTTTIEREntry(arr) {
 	var str = "";
 	arr.forEach(e => {
-		str = str.concat(" - " + JSON.stringify(e) + "\n");
+		var date = new Date(e.date);
+		str = str.concat(" - " + e.name + "\n");
 	});
 
 	return str;
