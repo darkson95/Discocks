@@ -5,15 +5,6 @@ var flussbachenbestandskontroloer = new Discord.Client();
 var lahnsteiner = new Discord.Client();
 var request = require('request');
 var stringArgv = require('string-argv');
-var Youtube = require("youtube-api");
-Youtube.authenticate({
-    type: "oauth",
-  	refresh_token: process.env.YTREFRESHTOKEN,
-  	client_id: process.env.YTCLIENTID,
-  	client_secret: process.env.YTCLIENTSECRET,
-  	redirect_url: process.env.YTREDIRECTURL
-});
-var ytdl = require('ytdl-core');
 var request = require('request');
 var parseString = require('xml2js').parseString;
 var stringSimilarity = require('string-similarity');
@@ -21,10 +12,6 @@ var querystring = require('querystring');
 var humanizeDuration = require('humanize-duration')
 
 var tttier = [];
-var ytQueue = [];
-var ytNowPlaying = "";
-var ytCurrentDispatcher = null;
-
 var gioghurt = false;
 var counter = 0;
 
@@ -258,7 +245,16 @@ bot.on("message", msg => {
 	}
 	else if(cmd.startsWith(prefix + "ttt")){
 		var func = args[0] || "";
-		var usr = args[1] || msg.author.username;
+		var name = args[1] || msg.author.username;
+		var usr = {name: name, date: Date.now()};
+
+		if(tttier.length > 0){
+			var ms = Date.now() - tttier[tttier.length - 1].date;
+			if(ms > 28800000){
+				tttier = [];
+				msg.reply("Liste wurde gecleared, da der letzte Eintrag älter als 8 Stunden ist.");
+			}
+		}
 
 		msg.delete();
 		var msgs = Array.from(msg.channel.messages.values());
@@ -274,7 +270,7 @@ bot.on("message", msg => {
 			}
 		}
 		else if(func == "rm"){
-			tttier = tttier.filter(e => e !== usr);
+			tttier = tttier.filter(e => e.name !== usr);
 			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printArray(tttier));
 		}
 		else if(func == "clear"){
@@ -282,107 +278,9 @@ bot.on("message", msg => {
 		}
 		else {
 			if(tttier.indexOf(usr) == -1){
-				tttier.push(msg.author.username);
+				tttier.push(usr);
 			}
 			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printArray(tttier));
-		}
-	}
-	else if(cmd.startsWith(prefix + "yt")){
-		var func = args[0] || "";
-
-		if(func == "add"){
-			var search = "";
-			if(args.length == 0){
-				msg.reply("Error: no Arguments");
-				return;
-			}
-			else if(args.length > 0){
-				args.forEach(arg => {
-					if(arg != func){
-						search = search.concat(arg + ' ');
-					}
-				});
-			}
-
-			Youtube.search.list(
-				{
-					part: "snippet",
-					q: search
-				}, 
-				(err, data) => {
-					if (err){
-						msg.reply(err);
-						return;
-					}
-
-					var videoResult = data.items[0];
-					var videoURL = "https://youtube.com/watch?v=" + videoResult.id.videoId;
-
-					ytQueue.push({title : videoResult.snippet.title, url : videoURL});
-					msg.channel.sendMessage(videoResult.snippet.title + " wurde in die Warteschlange von " + msg.author + " hinzugefügt");
-
-				});
-
-			if(bot.voiceConnections.first() == undefined){
-				startStream(msg);
-			}
-		}
-		else if(func == "skip"){
-			ytCurrentDispatcher.end();
-			msg.channel.sendMessage("Aktueller Titel wurde von " + msg.author + " übersprungen.");
-		}
-		else if(func == "plause"){
-			if(ytCurrentDispatcher == null) return;
-			if(ytCurrentDispatcher.paused){
-				ytCurrentDispatcher.resume();
- 				msg.channel.sendMessage("Musikwiedergabe wurde von " + msg.author + " fortgesetzt.");
-			}
-			else {
-				ytCurrentDispatcher.pause();
- 				msg.channel.sendMessage("Musikwiedergabe wurde von " + msg.author + " pausiert.");
-			}
-		}
-		else if(func == "stop"){
- 			var con = bot.voiceConnections.first();
-
- 			if(con){
- 				ytQueue = [];
- 				con.disconnect();
- 				msg.channel.sendMessage("Musikwiedergabe wurde von " + msg.author + " gestoppt.");
- 			}
-		}
-		else if(func == "queue"){
-			if(ytQueue.length > 0){
-				msg.channel.sendMessage("Die Warteschlange: \n" + printQueue(ytQueue));
-			}
-			else {
-				msg.channel.sendMessage("Die Warteschlange ist leer.");
-			}
-		}
-		else if(func == "now"){
-			msg.channel.sendMessage("Aktuelle Wiedergabe: " + ytNowPlaying);
-		}
-		else if(func == "vol"){
-			var vol = args[1];
-
-			if(bot.voiceConnections.first() != undefined){
-				ytCurrentDispatcher.setVolume(vol);
-				msg.channel.sendMessage("Lautstärke wurde auf " + vol + " von " + msg.author + " gesetzt.");
-			}
-		}
-	}
-	else if(cmd.startsWith(prefix + "w")){
-		var ytUrl = args[0];
-		var match = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/.exec(ytUrl);
-
-		var ytId = (match&&match[7].length==11)? match[7] : false;
-
-		if(ytId){
-			msg.channel.sendMessage("https://sync-youtube.com/watch?v=" + ytId);
-			msg.delete();
-		}
-		else {
-			msg.reply("ERROR: no video id");
 		}
 	}
 	else if(cmd.startsWith(prefix + "insult")){
@@ -443,53 +341,6 @@ function printArray(arr) {
 	});
 
 	return str;
-}
-
-function printQueue(queue) {
-	var str = "";
-	queue.forEach(e => {
-		str = str.concat(" - " + e.title + "\n");
-	});
-
-	return str;
-}
-
-function playStream(connection, msg) {
-	var vid = ytQueue[0];
-
-	if(vid){
-		ytQueue = ytQueue.filter(e => e !== vid);
-
-		var streamOptions = { seek: 0, volume: 0.05 };
-		var stream = ytdl(vid.url, {filter : 'audioonly'});
-		ytCurrentDispatcher = connection.playStream(stream, streamOptions);
-
-		msg.channel.sendMessage("Aktuelle Wiedergabe: " + vid.title);
-		ytNowPlaying = vid.title;
-
-		ytCurrentDispatcher.on('end', () => {
-			if(ytQueue.length != 0){
-				playStream(connection, msg);
-			}
-		});
-	}
-	else {
-		msg.reply('Error: no title in queue');
-	}
-}
-
-function startStream(msg) {
-	for (var channel of bot.guilds.first().channels) {
-		if(channel[1].name == "General" && channel[1].type == "voice"){
-			channel[1]
-				.join()
-				.then(connection => {
-					playStream(connection, msg);
-			 	})
-				.catch(console.error);
-			break;
-		}
-	}
 }
 
 function xmlToJson(url, callback) {
