@@ -263,23 +263,20 @@ bot.on("message", msg => {
 			msgs.forEach(x => x.delete());
 		}
 		
+		tttier = tttier.filter(e => e.name !== name);
+		
 		if(func == "add"){
-			if(tttier.indexOf(usr) == -1){
-				tttier.push(usr);
-				msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
-			}
+			tttier.push(usr);
+			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
 		}
 		else if(func == "rm"){
-			tttier = tttier.filter(e => e.name !== usr);
 			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
 		}
 		else if(func == "clear"){
 			tttier = [];
 		}
 		else {
-			if(tttier.indexOf(usr) == -1){
-				tttier.push(usr);
-			}
+			tttier.push(usr);
 			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
 		}
 	}
