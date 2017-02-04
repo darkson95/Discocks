@@ -10,6 +10,14 @@ var parseString = require('xml2js').parseString;
 var stringSimilarity = require('string-similarity');
 var querystring = require('querystring');
 var humanizeDuration = require('humanize-duration')
+var Youtube = require("youtube-api");
+Youtube.authenticate({
+    type: "oauth",
+  	refresh_token: process.env.YTREFRESHTOKEN,
+  	client_id: process.env.YTCLIENTID,
+  	client_secret: process.env.YTCLIENTSECRET,
+  	redirect_url: process.env.YTREDIRECTURL
+});
 
 var tttier = [];
 var gioghurt = false;
@@ -124,7 +132,7 @@ bot.on("message", msg => {
 	if (!cmd.startsWith(prefix)) return;
 
 	if(cmd.startsWith(prefix + "commands")){
-		msg.reply('\n\n**!info** - prints general information\n**!shit *str*** - prints Mario shitting on your *str*\n**!ascii *str*** - prints *str* in Ascii-Art from http://artii.herokuapp.com\n**!yee** - prints yee-dinosaur\n**!coin** - prints tails or heads\n**!meme "*memeName*" ["*topLine*"] ["*bottomLine*"]** - creates Meme on http://memegenerator.net with your options\n**!ttt** - prints question/players and adds you to the playerlist\n**!ttt clear** - clears the playerlist\n**!ttt add [*userName*]** - adds you [or the username] to the playerlist\n**!ttt rm [*userName*]** - removes you [or the username] from the playerlist\n**!insult *username** - insults *username* from http://datahamster.com/autoinsult\n**!compliment *username*** - compliments *username* from http://emergencycompliment.com\n');
+		msg.reply('\n\n**!info** - prints general information\n**!shit *str*** - prints Mario shitting on your *str*\n**!yee** - prints yee-dinosaur\n**!coin** - prints tails or heads\n**!meme "*memeName*" ["*topLine*"] ["*bottomLine*"]** - creates Meme on http://memegenerator.net with your options\n**!ttt** - prints question/players and adds you to the playerlist\n**!ttt clear** - clears the playerlist\n**!ttt add [*userName*]** - adds you [or the username] to the playerlist\n**!ttt rm [*userName*]** - removes you [or the username] from the playerlist\n');
 	}
 	else if(cmd.startsWith(prefix + "info")){
 		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
@@ -148,30 +156,6 @@ bot.on("message", msg => {
 	} 
 	else if (cmd.startsWith(prefix + "yee")) {
 		msg.channel.sendMessage('\n░░░░░░░░░▄▄▄██▀▀▀▀███▄░░░░░\n░░░░░░░▄▀▀░░░░░░░░░░░▀█░░░░\n░░░░▄▄▀░░░░░░░░░░░░░░░▀█░░░\n░░░█░░░░░▀▄░░▄▀░░░░░░░░█░░░\n░░░▐██▄░░▀▄▀▀▄▀░░▄██▀░▐▌░░░\n░░░█▀█░▀░░░▀▀░░░▀░█▀░░▐▌░░░\n░░░█░░▀▐░░░░░░░░▌▀░░░░░█░░░\n░░░█░░░░░░░░░░░░░░░░░░░█░░░\n░░░░█░░▀▄░░░░▄▀░░░░░░░░█░░░\n░░░░█░░░░░░░░░░░▄▄░░░░█░░░░\n░░░░░█▀██▀▀▀▀██▀░░░░░░█░░░░\n░░░░░█░░▀████▀░░░░░░░█░░░░░\n░░░░░░█░░░░░░░░░░░░▄█░░░░░░\n░░░░░░░██░░░░░█▄▄▀▀░█░░░░░░\n░░░░░░░░▀▀█▀▀▀▀░░░░░░█░░░░░\n░░░░░░░░░█░░░░░░░░░░░░█░░░░\n');
-	} 
-	else if (cmd.startsWith(prefix + "ascii")) {
-		var search = "";
-
-		if(args.length == 0){
-			search = "deine mudda";
-		}
-		else if(args.length >= 1){
-			args.forEach(arg => {
-				search = search.concat(arg + '+');
-			});
-			search = search.substring(0, search.length - 1);
-		}
-
-		request({
-			url: "http://artii.herokuapp.com/make?text=" + search,
-			headers: {
-					'User-Agent': 'GrosserSchwarzerDildo/5.0 (Bitch) SuckMy/12.0 Inch'
-				}
-			}, function (errorTwo, responseTwo, bodyTwo) {
-			if (!errorTwo && responseTwo.statusCode == 200) {
-				msg.channel.sendMessage('``' + bodyTwo + '``');
-			}
-		});
 	} 
 	else if (cmd.startsWith(prefix + "coin")) {
 		var int = Math.floor((Math.random() * 2));
@@ -279,55 +263,6 @@ bot.on("message", msg => {
 			tttier.push(usr);
 			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
 		}
-	}
-	else if(cmd.startsWith(prefix + "insult")){
-		var user = args[0] || "Gioghurt";
-		var allUsersString = [];
-		var allUsers = {};
-
-		Array.from(msg.guild.members.array()).forEach(x => {
-			allUsersString.push(x.user.username);
-			allUsers[x.user.username] = x.user;
-		});
-
-		var best = stringSimilarity.findBestMatch(user, allUsersString);
-		var bestUser = allUsers[best.bestMatch.target];
-		var int = Math.floor((Math.random() * 4));
-
-		xmlToJson("http://datahamster.com/autoinsult/scripts/webinsult.server.php?xajax=generate_insult&xajaxargs[]=" + int, (err, data) => {
-			var insult = data.xjx.cmd[0]._;
-			msg.channel.sendMessage(`${bestUser}, ` + insult, {tts: true});
-		});
-	}
-	else if(cmd.startsWith(prefix + "compliment")){
-		var user = args[0] || "Gioghurt";
-		var allUsersString = [];
-		var allUsers = {};
-
-		Array.from(msg.guild.members.array()).forEach(x => {
-			allUsersString.push(x.user.username);
-			allUsers[x.user.username] = x.user;
-		});
-
-		var best = stringSimilarity.findBestMatch(user, allUsersString);
-		var bestUser = allUsers[best.bestMatch.target];
-		
-		request({
-				url: 'https://spreadsheets.google.com/feeds/list/1eEa2ra2yHBXVZ_ctH4J15tFSGEu-VTSunsrvaCAV598/od6/public/values?alt=json',
-				json: true
-			}, function(err, res, body) {
-				if(err){
-					msg.reply('Error: ' + err);
-					return;
-				}
-
-				var compliments = body.feed.entry;
-
-				var int = Math.floor((Math.random() * compliments.length));
-				var compliment = body.feed.entry[int].title.$t;
-	
-				msg.channel.sendMessage(`${bestUser}, ` + compliment, {tts: true});
-			});
 	}
 });
 
