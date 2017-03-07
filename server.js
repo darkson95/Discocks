@@ -23,6 +23,8 @@ var tttier = [];
 var gioghurt = false;
 var counter = 0;
 
+var saarlaender = "Jonas";
+
 bot.login(process.env.DBOTTOKEN);
 kieling.login(process.env.KIELINGTOKEN);
 flussbachenbestandskontroloer.login(process.env.FLUSSBACHENBESTANDSKONTROLOERTOKEN);
