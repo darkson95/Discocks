@@ -1,35 +1,21 @@
+var config = require("./config.json");
+
 var Discord = require("discord.js");
 var bot = new Discord.Client();
-var kieling = new Discord.Client();
-var flussbachenbestandskontroloer = new Discord.Client();
-var lahnsteiner = new Discord.Client();
-var request = require('request');
 var stringArgv = require('string-argv');
-var request = require('request');
-var parseString = require('xml2js').parseString;
-var stringSimilarity = require('string-similarity');
-var querystring = require('querystring');
 var humanizeDuration = require('humanize-duration')
 var Youtube = require("youtube-api");
 Youtube.authenticate({
     type: "oauth",
-  	refresh_token: process.env.YTREFRESHTOKEN,
-  	client_id: process.env.YTCLIENTID,
-  	client_secret: process.env.YTCLIENTSECRET,
-  	redirect_url: process.env.YTREDIRECTURL
+  	refresh_token: config.youtube.refreshToken,
+  	client_id: config.youtube.clientId,
+  	client_secret: config.youtube.clientSecret,
+  	redirect_url: config.youtube.redirectUrl
 });
 
-var tttier = [];
-var gioghurt = false;
-var counter = 0;
+var playerlist = [];
 
-var saarlaender = "Jonas";
-
-bot.login(process.env.DBOTTOKEN);
-kieling.login(process.env.KIELINGTOKEN);
-flussbachenbestandskontroloer.login(process.env.FLUSSBACHENBESTANDSKONTROLOERTOKEN);
-lahnsteiner.login(process.env.LAHNSTEINERTOKEN);
-
+bot.login(config.token);
 bot.on('ready', () => {
 	var game = new Discord.Game({name : "!info", type : 1});
 	var pres = new Discord.Presence({status : "online", game : game});
@@ -39,34 +25,13 @@ bot.on('ready', () => {
 	console.log('I am ready!');
 });
 
-kieling.on('ready', () => {
-	var game = new Discord.Game({name : "mit Cleo", type : 1});
-	var pres = new Discord.Presence({status : "online", game : game});
-
-	kieling.user.setPresence(pres);
-
-	console.log('kieling is ready!');
-});
-
-flussbachenbestandskontroloer.on('ready', () => {
-	var game = new Discord.Game({name : "Spastkiste", type : 1});
-	var pres = new Discord.Presence({status : "online", game : game});
-
-	flussbachenbestandskontroloer.user.setPresence(pres);
-
-	console.log('flussbachenbestandskontroloer is ready!');
-});
-
-lahnsteiner.on('ready', () => {
-	var game = new Discord.Game({name : "420 blaze it", type : 1});
-	var pres = new Discord.Presence({status : "online", game : game});
-
-	lahnsteiner.user.setPresence(pres);
-
-	console.log('lahnsteiner is ready!');
-});
-
 bot.on("message", msg => {
+	if (msg.author.bot) return;
+	if (!msg.guild) {
+		msg.reply('Please send Message in Guild!');
+		return;
+	}
+
 	var prefix = "!";
 	var args = stringArgv.parseArgsStringToArgv(msg.content);
 	var cmd = "";
@@ -75,7 +40,75 @@ bot.on("message", msg => {
 	}
 	args = args.filter(a => a !== cmd);
 
-	if(msg.channel.name == "music"){
+	addYoutubeVideoToPlaylist("music", msg, config.youtube.playlistId);
+
+	if(cmd.startsWith(prefix + "info")){
+		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
+		msg.reply("If you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: " + config.mail + "\n- Repository: " + config.repo + "\n- Bot-Uptime: " + ut + "\n- Youtube-Playlist: https://www.youtube.com/playlist?list=" + config.youtube.playlistId + "\n- Commands: \n	**!ttt [*username*]** - prints question/players and adds you [or the username] to the playerlist\n	**!ttt rm [*username*]** - removes you [or the username] from the playerlist\n	**!ttt clear** - clears the playerlist\n\n");
+	}
+	else if(cmd.startsWith(prefix + "ttt")){
+		var func = args[0];
+		if(args[1]){
+			name = args[1];
+		}
+		else if(args[0] && args[0] != "rm" && args[0] != "clear"){
+			name = args[0];
+		}
+		else {
+			name = msg.author.username;
+		}
+		var usr = {name: name, date: Date.now()};
+
+		if(playerlist.length > 0){
+			var ms = Date.now() - playerlist[playerlist.length - 1].date;
+			if(ms > 28800000){
+				playerlist = [];
+				msg.reply("Playerlist cleared because the last entry was 8 hours ago.");
+			}
+			else {
+				var msgs = Array.from(msg.channel.messages.values());
+				msgs = msgs.filter(x => x.author.username == bot.user.username && x.content.startsWith('Do you want to play G'));
+
+				if(msgs.length > 0){
+					msgs.forEach(x => x.delete());
+				}
+			}
+		}
+
+		msg.delete();
+		playerlist = playerlist.filter(e => e.name !== name);
+		
+		switch (func) {
+			case "rm":
+				printPlayerlist(msg, playerlist);
+				break;
+			case "clear":
+				playerlist = [];
+				break;
+			default:
+				playerlist.push(usr);
+				printPlayerlist(msg, playerlist);
+				break;
+		}
+	}
+});
+
+function printPlayerlist (msg, playerlist) {
+	msg.channel.sendMessage("Do you want to play Garry's Mod - Trouble in Terrorist Town? Playerlist [" + playerlist.length + "]:\n" + printPlayerlistEntries(playerlist));	
+}
+
+function printPlayerlistEntries(arr) {
+	var str = "";
+	arr.forEach(e => {
+		var date = new Date(e.date);
+		str = str.concat(" - " + e.name + "\n");
+	});
+
+	return str;
+}
+
+function addYoutubeVideoToPlaylist(channelname, msg, playlistid){
+	if(msg.channel.name == channelname){
 		if(msg.content.includes("youtu")){
 			var match = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/.exec(msg.content);
 
@@ -87,7 +120,7 @@ bot.on("message", msg => {
 					var req = Youtube.playlistItems.list(
 					{
 						part: "snippet", 
-						playlistId: process.env.YTPLAYLISTID
+						playlistId: playlistid
 					}, 
 					(err, data) => {
 						if (err){
@@ -106,7 +139,7 @@ bot.on("message", msg => {
 								part: "snippet",
 								resource: {
 									snippet: {
-										playlistId: process.env.YTPLAYLISTID,
+										playlistId: playlistid,
 										resourceId: {
 											kind: "youtube#video",
 											videoId: id
@@ -125,227 +158,4 @@ bot.on("message", msg => {
 			}
 		}
 	}
-
-	if (msg.author.bot) return;
-	if (!msg.guild) {
-		msg.reply('Please send Message in Guild!');
-		return;
-	}
-	if (!cmd.startsWith(prefix)) return;
-
-	if(cmd.startsWith(prefix + "commands")){
-		msg.reply('\n\n**!info** - prints general information\n**!shit *str*** - prints Mario shitting on your *str*\n**!yee** - prints yee-dinosaur\n**!coin** - prints tails or heads\n**!meme "*memeName*" ["*topLine*"] ["*bottomLine*"]** - creates Meme on http://memegenerator.net with your options\n**!ttt** - prints question/players and adds you to the playerlist\n**!ttt clear** - clears the playerlist\n**!ttt add [*userName*]** - adds you [or the username] to the playerlist\n**!ttt rm [*userName*]** - removes you [or the username] from the playerlist\n');
-	}
-	else if(cmd.startsWith(prefix + "info")){
-		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
-		msg.reply('\n\nIf you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: discocks@wurstkun.com\n- Repository: https://github.com/darkson95/Discocks\n- ``!commands`` - prints all commands\n- Bot-Uptime: ' + ut + '\n- Youtubeplaylist: https://www.youtube.com/playlist?list=' + process.env.YTPLAYLISTID + '\n');
-	}
-	else if (cmd.startsWith(prefix + "shit")) {
-		var str = "";
-
-		if(args.length == 0){
-			str = "deine mudda";
-		}
-		else if(args.length > 0){
-			args.forEach(arg => {
-				str = str.concat(arg + ' ');
-			});
-		}
-
-		str = str.trim();
-		var wdh = str.length < 18 ? 18-str.length : 0; 
-		msg.channel.sendMessage('``░░░░░░░░░░░░░▄▄▄▄░░░░░░\n░░░░░░░░░░▄▀▀▓▓▓▀█░░░░░\n░░░░░░░░▄▀▓▓▄██████▄░░░\n░░░░░░░▄█▄█▀░░▄░▄░█▀░░░\n░░░░░░▄▀░██▄░░▀░▀░▀▄░░░\n░░░░░░▀▄░░▀░▄█▄▄░░▄█░░░\n░░░░░░░░▀█▄▄░▀▀▀█▀░░░░░\n░░░░░░░░░░█░░░░░█░░░░░░\n░░░░░░▄▀▀▀░░░░░░█▄▄░░░░\n░░░░░░█░█░░░░░░░░░░▐░░░\n░░░░░░▐▐░░░░░░░░░▄░▐░░░\n░░░░░░█░░░░░░░░▄▀▀░▐░░░\n░░░░▄▀░░░░░░░░▐░▄▄▀░░░░\n░░▄▀░░░▐░░░░░█▄▀░▐░░░░░\n░░█░░░▐░░░░░░░░▄░█░░░░░\n░░░█▄░░▀▄░░░░▄▀▐░█░░░░░\n░░░█▐▀▀▀░▀▀▀▀░░▐░█░░░░░\n░░▐█▐░░░▀░░░░░░▐░█▄▄░░░\n░░▀▀░░▄▄▄▄▄░░░░▐▄▄▄▀░░░\n░░░ ' + str + ' ' + '░'.repeat(wdh) + '``');
-	} 
-	else if (cmd.startsWith(prefix + "yee")) {
-		msg.channel.sendMessage('\n░░░░░░░░░▄▄▄██▀▀▀▀███▄░░░░░\n░░░░░░░▄▀▀░░░░░░░░░░░▀█░░░░\n░░░░▄▄▀░░░░░░░░░░░░░░░▀█░░░\n░░░█░░░░░▀▄░░▄▀░░░░░░░░█░░░\n░░░▐██▄░░▀▄▀▀▄▀░░▄██▀░▐▌░░░\n░░░█▀█░▀░░░▀▀░░░▀░█▀░░▐▌░░░\n░░░█░░▀▐░░░░░░░░▌▀░░░░░█░░░\n░░░█░░░░░░░░░░░░░░░░░░░█░░░\n░░░░█░░▀▄░░░░▄▀░░░░░░░░█░░░\n░░░░█░░░░░░░░░░░▄▄░░░░█░░░░\n░░░░░█▀██▀▀▀▀██▀░░░░░░█░░░░\n░░░░░█░░▀████▀░░░░░░░█░░░░░\n░░░░░░█░░░░░░░░░░░░▄█░░░░░░\n░░░░░░░██░░░░░█▄▄▀▀░█░░░░░░\n░░░░░░░░▀▀█▀▀▀▀░░░░░░█░░░░░\n░░░░░░░░░█░░░░░░░░░░░░█░░░░\n');
-	} 
-	else if (cmd.startsWith(prefix + "coin")) {
-		var int = Math.floor((Math.random() * 2));
-
-		switch(int){
-			case 0:
-				msg.reply("Tails");
-				break;
-			case 1:
-				msg.reply("Heads");
-				break;
-			default:
-				break;
-		}
-	}
-	else if(cmd.startsWith(prefix + "meme")){
-		var searchRaw = args[0];
-		var search = searchRaw.replace(" ", "+");
-		var text0 = args[1] || " ";
-		var text1 = args[2] || " ";
-		text0 = text0.split('&')[0] || " ";
-		text1 = text1.split('&')[0] || " ";
-		text0 = text0.replace(/(^\"|\"$)/g, "").replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue');
-		text1 = text1.replace(/(^\"|\"$)/g, "").replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue');
-
-		if(search.length == 0){
-			msg.reply('Error: SearchString is null');
-			return;
-		}
-
-		request({
-			url: 'http://version1.api.memegenerator.net/Generators_Search?q=' + search,
-			json: true,
-		}, function(err, res, body) {
-			if(err){
-				msg.reply('Error: (request-search)' + err);
-				return;
-			}
-			else if(body.result.length == 0){
-				msg.reply('Error: no results for: ' + searchRaw);
-				msg.delete();
-				return;
-			}
-
-			var meme = body.result[0];
-
-			var imageID = meme.imageUrl.replace(/^.*[\\\/]/, '').split('.');
-			imageID = imageID[0];
-
-			var url = "http://version1.api.memegenerator.net/Instance_Create?";
-			var paras = querystring.stringify({ username: process.env.MEMEUN, password: process.env.MEMEPW, languageCode: 'de', imageID: imageID, generatorID: meme.generatorID, text0: text0, text1: text1 });
-			
-			request({
-				url: 'http://version1.api.memegenerator.net/Instance_Create?' + paras,
-				json: true,
-			}, function(err, res, body) {
-				if(err){
-					msg.reply('Error: (request-gen)' + err);
-					return;
-				}
-
-				if(body.success){
-					msg.channel.sendFile(body.result.instanceImageUrl, "Meme.jpg", msg.content + " | " + meme.displayName);
-					msg.delete();
-				}
-				else {
-					msg.reply('Error: (body.success)' + JSON.stringify(body, null, 1));
-				}
-			});
-		});
-	}
-	else if(cmd.startsWith(prefix + "ttt")){
-		var func = args[0] || "";
-		var name = args[1] || msg.author.username;
-		var usr = {name: name, date: Date.now()};
-
-		if(tttier.length > 0){
-			var ms = Date.now() - tttier[tttier.length - 1].date;
-			if(ms > 28800000){
-				tttier = [];
-				msg.reply("Liste wurde gecleared, da der letzte Eintrag älter als 8 Stunden ist.");
-			}
-		}
-
-		msg.delete();
-		var msgs = Array.from(msg.channel.messages.values());
-		msgs = msgs.filter(x => x.author.username == bot.user.username && x.content.startsWith('Lust'));
-		if(msgs.length > 0){
-			msgs.forEach(x => x.delete());
-		}
-		
-		tttier = tttier.filter(e => e.name !== name);
-		
-		if(func == "add"){
-			tttier.push(usr);
-			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
-		}
-		else if(func == "rm"){
-			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
-		}
-		else if(func == "clear"){
-			tttier = [];
-		}
-		else {
-			tttier.push(usr);
-			msg.channel.sendMessage("Lust auf Trouble in Terrorist Town? Es sind schon " + tttier.length + " Spieler dabei: \n" + printTTTIEREntry(tttier));
-		}
-	}
-});
-
-function printTTTIEREntry(arr) {
-	var str = "";
-	arr.forEach(e => {
-		var date = new Date(e.date);
-		str = str.concat(" - " + e.name + "\n");
-	});
-
-	return str;
 }
-
-function xmlToJson(url, callback) {
-	request({
-		url: url,
-		headers: {
-				'User-Agent': 'GrosserSchwarzerDildo/5.0 (Bitch) SuckMy/12.0 Inch'
-			}
-		}, function (error, response, body) {
-		if (!error && response.statusCode == 200) {
-			parseString(body, function(err, result) {
-				callback(null, result);
-			});
-		}
-		else{
-			throw error;
-		}
-	});
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-
-kieling.on("message", msg => {
-
-	if(msg.content.startsWith("!kieling")){
-		gioghurt = true;
-		ja(msg.channel);
-	}
-	else if(msg.content.startsWith("!maggi")){
-		gioghurt = false;
-	}
-	else if(msg.content.startsWith("Die lebt!") && msg.author.username.includes("Flussbachenbestandskontrolör") && gioghurt){
-		if(counter < 3){
-			setTimeout(function(){
-				ja(msg.channel);
-			}, 3750);
-		}
-		else {
-			gioghurt = false;
-			counter = 0;
-		}
-	}
-
-});
-
-flussbachenbestandskontroloer.on("message", msg => {
-
-	if(msg.content.startsWith("Ja!") && msg.author.username.includes("Andreas Kieling")){
-
-		setTimeout(function(){
-			msg.channel.sendMessage("Die lebt!", {tts: true});
-		}, 3000);
-
-	}
-});
-
-
-function ja(channel) {
-	channel.sendMessage('Ja!', {tts: true});
-	counter++;
-}
-
-
-/////////////////////////////////////////////////
-
-
-
-lahnsteiner.on("message", msg => {
-
-	if(msg.content.toUpperCase().startsWith("WIE DER LAHNSTEINER ZU SAGEN PFLEGT")){
-		msg.channel.sendMessage("Korrekt!", {tts: true});
-	}
-});
