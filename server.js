@@ -134,7 +134,8 @@ function pinMessage (msg, message) {
 		pinned.sendMessage(content);
 	}
 	else {
-		var output = ";"
+		var output = "";
+		
 		if(!msg){
 			output = output + "msg ";
 		}
