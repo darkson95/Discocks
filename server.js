@@ -121,7 +121,7 @@ bot.on("message", msg => {
 });
 
 function pinMessage (msg, message) {
-	var pinned = msg.guild.channels.find("id", config.pinned);
+	var pinned = msg.guild.channels.find("id", config.pinnedID);
 
 	if(pinned && msg && message){
 		var attachments = message.attachments.array()
