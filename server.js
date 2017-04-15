@@ -6,11 +6,11 @@ var stringArgv = require('string-argv');
 var humanizeDuration = require('humanize-duration')
 var Youtube = require("youtube-api");
 Youtube.authenticate({
-    type: "oauth",
-  	refresh_token: config.youtube.refreshToken,
-  	client_id: config.youtube.clientId,
-  	client_secret: config.youtube.clientSecret,
-  	redirect_url: config.youtube.redirectUrl
+	type: "oauth",
+	refresh_token: config.youtube.refreshToken,
+	client_id: config.youtube.clientId,
+	client_secret: config.youtube.clientSecret,
+	redirect_url: config.youtube.redirectUrl
 });
 
 var playerlist = [];
@@ -44,7 +44,7 @@ bot.on("message", msg => {
 
 	if(cmd.startsWith(prefix + "info")){
 		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
-		msg.reply("If you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: " + config.mail + "\n- Repository: " + config.repo + "\n- Bot-Uptime: " + ut + "\n- Youtube-Playlist: https://www.youtube.com/playlist?list=" + config.youtube.playlistId + "\n- Commands: \n	**!ttt [*username*]** - prints question/players and adds you [or the username] to the playerlist\n	**!ttt rm [*username*]** - removes you [or the username] from the playerlist\n	**!ttt clear** - clears the playerlist\n\n");
+		msg.reply("If you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: " + config.mail + "\n- Repository: " + config.repo + "\n- Bot-Uptime: " + ut + "\n- Youtube-Playlist: https://www.youtube.com/playlist?list=" + config.youtube.playlistId + "\n- Commands: \n	**!ttt [*username*]** - prints question/players and adds you [or the username] to the playerlist\n	**!ttt rm [*username*]** - removes you [or the username] from the playerlist\n	**!ttt clear** - clears the playerlist\n	**!pin** - copies the last message to #pinned\n	**!pin n** - copies the nth last message from the most recent one to #pinned\n	**!pin ID** - copies the message with ID to #pinned\n\n");
 	}
 	else if(cmd.startsWith(prefix + "ttt")){
 		var func = args[0];
@@ -80,18 +80,73 @@ bot.on("message", msg => {
 		
 		switch (func) {
 			case "rm":
-				printPlayerlist(msg, playerlist);
-				break;
+			printPlayerlist(msg, playerlist);
+			break;
 			case "clear":
-				playerlist = [];
-				break;
+			playerlist = [];
+			break;
 			default:
-				playerlist.push(usr);
-				printPlayerlist(msg, playerlist);
-				break;
+			playerlist.push(usr);
+			printPlayerlist(msg, playerlist);
+			break;
+		}
+	}
+	else if(cmd.startsWith(prefix + "pin")){
+		if(args[0] && args[0] > 100){
+			var msgID = args[0];
+
+			msg.channel.fetchMessage(args[0])
+			.then(message => {
+				pinMessage(msg, message);
+			})
+			.catch(err => {
+				msg.reply("ERROR: " + err);
+			});
+		}
+		else if(args[0] && args[0] < 100) {
+			var steps = parseInt(args[0]) + 1;
+
+			var messages = msg.channel.messages.array();
+			var message = messages[messages.length - steps];
+			
+			pinMessage(msg, message);
+		}
+		else {
+			var messages = msg.channel.messages.array();
+			var message = messages[messages.length - 2];
+			
+			pinMessage(msg, message);
 		}
 	}
 });
+
+function pinMessage (msg, message) {
+	var pinned = msg.guild.channels.find("id", config.pinned);
+
+	if(pinned && msg && message){
+		var attachments = message.attachments.array()
+		var content = message.content;
+
+		attachments.forEach(attachment => {
+			content = content + "\n" + attachment.url; 
+		});
+
+		pinned.sendMessage(content);
+	}
+	else {
+		var output = ";"
+		if(!msg){
+			output = output + "msg ";
+		}
+		if(!message){
+			output = output + "message ";
+		}
+		if(!pinned){
+			output = output + "pinned ";
+		}
+		msg.reply(output + " not found!");
+	}
+}
 
 function printPlayerlist (msg, playerlist) {
 	msg.channel.sendMessage("Do you want to play Garry's Mod - Trouble in Terrorist Town? Playerlist [" + playerlist.length + "]:\n" + printPlayerlistEntries(playerlist));	

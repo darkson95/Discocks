@@ -2,6 +2,7 @@
 	"token" : "YOUR DISCORD BOT TOKEN",
 	"mail" : "YOUR CONTACT MAIL",
 	"repo" : "YOUR SOURCE REPOSITORY",
+	"pinnedID" : "YOUR PINNED TEXTCHANNEL ID",
 	"youtube": {
 		"playlistId" : "YOUR YOUTUBE PLAYLISTID",
 		"refreshToken" : "YOUR YOUTUBE REFRESHTOKEN",
