@@ -180,7 +180,7 @@ function addYoutubeVideoToPlaylist(channelname, msg, playlistid){
 					}, 
 					(err, data) => {
 						if (err){
-							msg.reply(err);
+							msg.reply("ERROR: Youtube.playListItems.list: " + err + data);
 							return;
 						}
 
@@ -204,7 +204,7 @@ function addYoutubeVideoToPlaylist(channelname, msg, playlistid){
 								}
 							}, (err, data) => {
 								if (err){
-									msg.reply(err);
+									msg.reply("Youtube.playlistItems.insert: " + err + data);
 									return;
 								}
 							});
