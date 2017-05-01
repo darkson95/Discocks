@@ -13,7 +13,8 @@ Youtube.authenticate({
 	redirect_url: config.youtube.redirectUrl
 });
 
-var playerlist = [];
+var TTTplayerlist = [];
+var CSGOplayerlist = [];
 
 bot.login(config.token);
 bot.on('ready', () => {
@@ -44,7 +45,7 @@ bot.on("message", msg => {
 
 	if(cmd.startsWith(prefix + "info")){
 		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
-		msg.reply("If you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: " + config.mail + "\n- Repository: " + config.repo + "\n- Bot-Uptime: " + ut + "\n- Youtube-Playlist: https://www.youtube.com/playlist?list=" + config.youtube.playlistId + "\n- Commands: \n	**!ttt [*username*]** - prints question/players and adds you [or the username] to the playerlist\n	**!ttt rm [*username*]** - removes you [or the username] from the playerlist\n	**!ttt clear** - clears the playerlist\n	**!pin** - copies the last message to #pinned\n	**!pin n** - copies the nth last message from the most recent one to #pinned\n	**!pin ID** - copies the message with ID to #pinned\n\n");
+		msg.reply("If you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n	- Mail: " + config.mail + "\n- Repository: " + config.repo + "\n- Bot-Uptime: " + ut + "\n- Youtube-Playlist: https://www.youtube.com/playlist?list=" + config.youtube.playlistId + "\n- Commands: \n	**!ttt [*username*]** - prints question/players and adds you [or the username] to the TTT-playerlist\n	**!ttt rm [*username*]** - removes you [or the username] from the TTT-playerlist\n	**!ttt clear** - clears the TTT-playerlist\n	**!csgo [*username*]** - prints question/players and adds you [or the username] to the CS:GO-playerlist\n	**!csgo rm [*username*]** - removes you [or the username] from the CS:GO-playerlist\n	**!csgo clear** - clears the CS:GO-playerlist\n	**!pin** - copies the last message to #pinned\n	**!pin n** - copies the nth last message from the most recent one to #pinned\n	**!pin ID** - copies the message with ID to #pinned\n\n	");
 	}
 	else if(cmd.startsWith(prefix + "ttt")){
 		var func = args[0];
@@ -59,11 +60,11 @@ bot.on("message", msg => {
 		}
 		var usr = {name: name, date: Date.now()};
 
-		if(playerlist.length > 0){
-			var ms = Date.now() - playerlist[playerlist.length - 1].date;
+		if(TTTplayerlist.length > 0){
+			var ms = Date.now() - TTTplayerlist[TTTplayerlist.length - 1].date;
 			if(ms > 28800000){
-				playerlist = [];
-				msg.reply("Playerlist cleared because the last entry was 8 hours ago.");
+				TTTplayerlist = [];
+				msg.reply("TTT-Playerlist cleared because the last entry was 8 hours ago.");
 			}
 			else {
 				var msgs = Array.from(msg.channel.messages.values());
@@ -76,18 +77,63 @@ bot.on("message", msg => {
 		}
 
 		msg.delete();
-		playerlist = playerlist.filter(e => e.name !== name);
+		TTTplayerlist = TTTplayerlist.filter(e => e.name !== name);
 		
 		switch (func) {
 			case "rm":
-			printPlayerlist(msg, playerlist);
+			printPlayerlist(msg, "Garry's Mod - Trouble in Terrorist Town", TTTplayerlist);
 			break;
 			case "clear":
-			playerlist = [];
+			TTTplayerlist = [];
 			break;
 			default:
-			playerlist.push(usr);
-			printPlayerlist(msg, playerlist);
+			TTTplayerlist.push(usr);
+			printPlayerlist(msg, "Garry's Mod - Trouble in Terrorist Town", TTTplayerlist);
+			break;
+		}
+	}
+	else if(cmd.startsWith(prefix + "csgo")){
+		var func = args[0];
+		if(args[1]){
+			name = args[1];
+		}
+		else if(args[0] && args[0] != "rm" && args[0] != "clear"){
+			name = args[0];
+		}
+		else {
+			name = msg.author.username;
+		}
+		var usr = {name: name, date: Date.now()};
+
+		if(CSGOplayerlist.length > 0){
+			var ms = Date.now() - CSGOplayerlist[CSGOplayerlist.length - 1].date;
+			if(ms > 28800000){
+				CSGOplayerlist = [];
+				msg.reply("CSGOPlayerlist cleared because the last entry was 8 hours ago.");
+			}
+			else {
+				var msgs = Array.from(msg.channel.messages.values());
+				msgs = msgs.filter(x => x.author.username == bot.user.username && x.content.startsWith('Do you want to play G'));
+
+				if(msgs.length > 0){
+					msgs.forEach(x => x.delete());
+				}
+			}
+		}
+
+		msg.delete();
+		CSGOplayerlist = CSGOplayerlist.filter(e => e.name !== name);
+		
+		switch (func) {
+			case "rm":
+			printPlayerlist(msg, "Counter Strike: Global Offensive", CSGOplayerlist);
+			break;
+			case "clear":
+			CSGOplayerlist = [];
+			break;
+			default:
+			CSGOplayerlist.push(usr);
+			printPlayerlist(msg, "Counter Strike: Global Offensive", CSGOplayerlist);
 			break;
 		}
 	}
@@ -149,8 +195,8 @@ function pinMessage (msg, message) {
 	}
 }
 
-function printPlayerlist (msg, playerlist) {
-	msg.channel.sendMessage("Do you want to play Garry's Mod - Trouble in Terrorist Town? Playerlist [" + playerlist.length + "]:\n" + printPlayerlistEntries(playerlist));	
+function printPlayerlist (msg, name, playerlist) {
+	msg.channel.sendMessage("Do you want to play " + name + "? Playerlist [" + playerlist.length + "]:\n" + printPlayerlistEntries(playerlist));	
 }
 
 function printPlayerlistEntries(arr) {
