@@ -45,7 +45,7 @@ bot.on("message", msg => {
 
 	if(cmd.startsWith(prefix + "info")){
 		var ut = humanizeDuration(Math.round(bot.uptime / 1000)*1000);
-		msg.reply("If you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n	- Mail: " + config.mail + "\n- Repository: " + config.repo + "\n- Bot-Uptime: " + ut + "\n- Youtube-Playlist: https://www.youtube.com/playlist?list=" + config.youtube.playlistId + "\n- Commands: \n	**!ttt [*username*]** - prints question/players and adds you [or the username] to the TTT-playerlist\n	**!ttt rm [*username*]** - removes you [or the username] from the TTT-playerlist\n	**!ttt clear** - clears the TTT-playerlist\n	**!csgo [*username*]** - prints question/players and adds you [or the username] to the CS:GO-playerlist\n	**!csgo rm [*username*]** - removes you [or the username] from the CS:GO-playerlist\n	**!csgo clear** - clears the CS:GO-playerlist\n	**!pin** - copies the last message to #pinned\n	**!pin n** - copies the nth last message from the most recent one to #pinned\n	**!pin ID** - copies the message with ID to #pinned\n\n	");
+		msg.reply("If you found a bug or have a nice idea, please contact me or create an issue on GitHub!\n- Mail: " + config.mail + "\n- Repository: " + config.repo + "\n		- Bot-Uptime: " + ut + "\n		- Youtube-Playlist: https://www.youtube.com/playlist?list=" + config.youtube.playlistId + "\n		- Commands: \n**!ttt [add *username*]** - prints question/players and adds you [or the username] to the TTT-playerlist\n**!ttt rm [*username*]** - removes you [or the username] from the TTT-playerlist\n**!ttt clear** - clears the TTT-playerlist\n**!csgo [add *username*]** - prints question/players and adds you [or the username] to the CS:GO-playerlist\n**!csgo rm [*username*]** - removes you [or the username] from the CS:GO-playerlist\n**!csgo clear** - clears the CS:GO-playerlist\n**!pin** - copies the last message to #pinned\n**!pin n** - copies the nth last message from the most recent one to #pinned\n**!pin ID** - copies the message with ID to #pinned\n**!applaus** - send Merkel-Meme\n\n");
 	}
 	else if(cmd.startsWith(prefix + "ttt")){
 		var func = args[0];
@@ -163,6 +163,9 @@ bot.on("message", msg => {
 			
 			pinMessage(msg, message);
 		}
+	}
+	else if(cmd.startsWith(prefix + "applaus")){
+		msg.channel.sendFile("https://s-media-cache-ak0.pinimg.com/originals/89/1d/5c/891d5c08d30e39688f83f1bff67348a2.jpg", "applaus.jpg");
 	}
 });
 
