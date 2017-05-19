@@ -3,7 +3,7 @@ var config = require("./config.json");
 var Discord = require("discord.js");
 var bot = new Discord.Client();
 var stringArgv = require('string-argv');
-var humanizeDuration = require('humanize-duration')
+var humanizeDuration = require('humanize-duration');
 var Youtube = require("youtube-api");
 Youtube.authenticate({
 	type: "oauth",
@@ -68,7 +68,8 @@ bot.on("message", msg => {
 			}
 			else {
 				var msgs = Array.from(msg.channel.messages.values());
-				msgs = msgs.filter(x => x.author.username == bot.user.username && x.content.startsWith('Do you want to play G'));
+				msgs = msgs.filter(x => x.author.username == bot.user.username 
+					&& x.content.startsWith('Do you want to play Garry'));
 
 				if(msgs.length > 0){
 					msgs.forEach(x => x.delete());
@@ -113,7 +114,8 @@ bot.on("message", msg => {
 			}
 			else {
 				var msgs = Array.from(msg.channel.messages.values());
-				msgs = msgs.filter(x => x.author.username == bot.user.username && x.content.startsWith('Do you want to play G'));
+				msgs = msgs.filter(x => x.author.username == bot.user.username 
+					&& x.content.startsWith('Do you want to play Counter Strike'));
 
 				if(msgs.length > 0){
 					msgs.forEach(x => x.delete());
