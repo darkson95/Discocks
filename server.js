@@ -176,7 +176,7 @@ function pinMessage (msg, message) {
 
 	if(pinned && msg && message){
 		var attachments = message.attachments.array()
-		var content = message.content;
+		var content = '"' + message.content + '" - ' + message.author.username;
 
 		attachments.forEach(attachment => {
 			content = content + "\n" + attachment.url; 
