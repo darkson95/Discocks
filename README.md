@@ -2,6 +2,7 @@
 A simple Discord Bot
 
 These are the commands you can use:
+
 Game
 - !game get - prints the playerlists
 - !game add [game*] [otherUser] - inserts an user to the playerlist
