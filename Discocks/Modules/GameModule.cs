@@ -281,7 +281,7 @@ namespace Discocks.Modules
                         entry.Value.Users.Clear();
                         await ReplyAsync("", false, EmbedHelper.CreateBuilder($"Playerlist for '{entry.Value.Name}' cleared because it's older than 8 hours...", "Warning").Build());
                     }
-                }                
+                }
 
                 if (gamelist[g.Name].Users.FindIndex(x => x.Username == user?.Username) == -1)
                 {
@@ -383,7 +383,13 @@ namespace Discocks.Modules
 
             if (gamelistMessages.Count > 0)
             {
-                await Context.Channel.DeleteMessagesAsync(gamelistMessages);
+                try
+                {
+                    await Context.Channel.DeleteMessagesAsync(gamelistMessages);
+                }
+                catch (Exception)
+                {
+                }
             }
 
             if (gamelist.Count > 0)
@@ -402,8 +408,15 @@ namespace Discocks.Modules
                         {
                             IUserMessage newMsg = await ReplyAsync("", false, EmbedHelper.CreateBuilder(msg, game.Key).Build());
 
-                            await Context.Message.DeleteAsync();
-                            ((List<ulong>)Session.Data["gamelistMessages"]).Add(newMsg.Id);
+                            try
+                            {
+                                ((List<ulong>)Session.Data["gamelistMessages"]).Add(newMsg.Id);
+                                await Context.Message.DeleteAsync();
+                            }
+                            catch (Exception)
+                            {
+
+                            }
                         }
                     }
                 }
@@ -412,8 +425,15 @@ namespace Discocks.Modules
             {
                 IUserMessage newMsg = await ReplyAsync("", false, EmbedHelper.CreateBuilder("Gamelist is empty!", "Warning").Build());
 
-                await Context.Message.DeleteAsync();
-                ((List<ulong>)Session.Data["gamelistMessages"]).Add(newMsg.Id);
+                try
+                {
+                    ((List<ulong>)Session.Data["gamelistMessages"]).Add(newMsg.Id);
+                    await Context.Message.DeleteAsync();
+                }
+                catch (Exception)
+                {
+
+                }
             }
         }
 
