@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,7 +33,8 @@ namespace Discocks.Models
         {
             List<Game> res = new List<Game>();
 
-            FileInfo gamesFile = new FileInfo(ConfigurationManager.AppSettings["GamesPath"]);
+            string path = @".\Discocks.Games.json";
+            FileInfo gamesFile = new FileInfo(path);
 
             if (gamesFile.Exists)
             {
@@ -60,7 +60,8 @@ namespace Discocks.Models
         {
             List<Game> res = new List<Game>();
 
-            FileInfo gamesFile = new FileInfo(ConfigurationManager.AppSettings["GamesPath"]);
+            string path = @".\Discocks.Games.json";
+            FileInfo gamesFile = new FileInfo(path);
 
             string json = JsonConvert.SerializeObject(games);
 

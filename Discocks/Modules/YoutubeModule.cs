@@ -1,4 +1,5 @@
 ﻿using Discocks.Helper;
+using Discocks.Models;
 using Discord.Commands;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
@@ -7,7 +8,6 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -25,7 +25,7 @@ namespace Discocks.Modules
         [Command("add")]
         [Alias("a")]
         [Summary("inserts url to our youtube playlist")]
-        public async Task Add(string url)
+        public async Task Add([Summary("The youtube url you want to add to the playlist")]string url)
         {
             string videoId;
 
@@ -33,13 +33,13 @@ namespace Discocks.Modules
             {
                 videoId = GetVideoId(url);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return;
             }
 
             UserCredential credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    new ClientSecrets { ClientId = ConfigurationManager.AppSettings["YouTubeClientId"], ClientSecret = ConfigurationManager.AppSettings["YouTubeClientSecret"] },
+                    new ClientSecrets { ClientId = Session.Config.YouTubeClientId, ClientSecret = Session.Config.YouTubeClientSecret },
                     // This OAuth 2.0 access scope allows for full read/write access to the
                     // authenticated user's account.
                     new[] { YouTubeService.Scope.Youtube },
@@ -57,13 +57,13 @@ namespace Discocks.Modules
             // Add a video to the newly created playlist.
             var newPlaylistItem = new PlaylistItem();
             newPlaylistItem.Snippet = new PlaylistItemSnippet();
-            newPlaylistItem.Snippet.PlaylistId = ConfigurationManager.AppSettings["YouTubePlaylistId"];
+            newPlaylistItem.Snippet.PlaylistId = Session.Config.YouTubePlaylistId;
             newPlaylistItem.Snippet.ResourceId = new ResourceId();
             newPlaylistItem.Snippet.ResourceId.Kind = "youtube#video";
             newPlaylistItem.Snippet.ResourceId.VideoId = videoId;
             newPlaylistItem = await youtubeService.PlaylistItems.Insert(newPlaylistItem, "snippet").ExecuteAsync();
 
-            Console.WriteLine("Playlist item id {0} was added to playlist id {1}.", newPlaylistItem.Id, ConfigurationManager.AppSettings["YouTubePlaylistId"]);
+            Console.WriteLine("Playlist item id {0} was added to playlist id {1}.", newPlaylistItem.Id, Session.Config.YouTubePlaylistId);
         }
 
         private string GetVideoId(string url)

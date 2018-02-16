@@ -7,7 +7,6 @@ using Discord.WebSocket;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,9 +41,9 @@ namespace Discocks.Modules
             [Command("add")]
             [Alias("a")]
             [Summary("inserts a game to the game list")]
-            public async Task Add(string game, string rolename, string aliases)
+            public async Task Add([Summary("The full name of the game")]string game, [Summary("The name of the playerrole")]string rolename, [Summary("The aliases of the game")]string aliases)
             {
-                rolename = $"{rolename}{ConfigurationManager.AppSettings["GameRoleSuffix"]}";
+                rolename = $"{rolename}{Session.Config.GameRoleSuffix}";
                 List<Models.Game> games = await Models.Game.GetGamesAsync();
                 Models.Game g = games.Find(x => x.Name.Equals(game) || x.Aliases.Any(y => y.Equals(game)));
 
@@ -63,9 +62,9 @@ namespace Discocks.Modules
 
                 if (!Context.Guild.Roles.ToList().Any(x => x.Name.Equals(rolename)))
                 {
-                    int red = Convert.ToInt32(ConfigurationManager.AppSettings["EmbedRed"]);
-                    int green = Convert.ToInt32(ConfigurationManager.AppSettings["EmbedGreen"]);
-                    int blue = Convert.ToInt32(ConfigurationManager.AppSettings["EmbedBlue"]);
+                    int red = Session.Config.EmbedRed;
+                    int green = Session.Config.EmbedGreen;
+                    int blue = Session.Config.EmbedBlue;
 
                     await Context.Guild.CreateRoleAsync(rolename, null, new Color(red, green, blue));
                 }
@@ -80,7 +79,7 @@ namespace Discocks.Modules
             [Command("remove")]
             [Alias("r")]
             [Summary("removes an user from the playerlist")]
-            public async Task Remove(string game)
+            public async Task Remove([Summary("The name or alias of the game")]string game)
             {
                 List<Models.Game> games = await Models.Game.GetGamesAsync();
 
@@ -129,7 +128,7 @@ namespace Discocks.Modules
             [Summary("prints all player roles")]
             public async Task Get()
             {
-                List<SocketRole> roles = Context.Guild.Roles.ToList().FindAll(x => x.Name.EndsWith(ConfigurationManager.AppSettings["GameRoleSuffix"]));
+                List<SocketRole> roles = Context.Guild.Roles.ToList().FindAll(x => x.Name.EndsWith(Session.Config.GameRoleSuffix));
 
                 await PrintGameRolesAsync(roles);
             }
@@ -141,10 +140,10 @@ namespace Discocks.Modules
             [Command("assign")]
             [Alias("a")]
             [Summary("assigns user player role")]
-            public async Task Assign(string game, IUser user = null)
+            public async Task Assign([Summary("The name or alias of the game")]string game, [Summary("The user mention or username")]IUser user = null)
             {
                 SocketGuildUser socketUser = (SocketGuildUser)(user ?? Context.Message.Author);
-                List<SocketRole> roles = Context.Guild.Roles.ToList().FindAll(x => x.Name.EndsWith(ConfigurationManager.AppSettings["GameRoleSuffix"]));
+                List<SocketRole> roles = Context.Guild.Roles.ToList().FindAll(x => x.Name.EndsWith(Session.Config.GameRoleSuffix));
 
                 SocketRole role = roles.Find(x => x.Name.Equals(game));
                 if (role == null)
@@ -175,10 +174,10 @@ namespace Discocks.Modules
             [Command("remove")]
             [Alias("r")]
             [Summary("removes player role from an user")]
-            public async Task Remove(string game, IUser user = null)
+            public async Task Remove([Summary("The name or alias of the game")]string game, [Summary("The user mention or username you want to add")]IUser user = null)
             {
                 SocketGuildUser socketUser = (SocketGuildUser)(user ?? Context.Message.Author);
-                List<SocketRole> roles = Context.Guild.Roles.ToList().FindAll(x => x.Name.EndsWith(ConfigurationManager.AppSettings["GameRoleSuffix"]));
+                List<SocketRole> roles = Context.Guild.Roles.ToList().FindAll(x => x.Name.EndsWith(Session.Config.GameRoleSuffix));
 
                 SocketRole role = roles.Find(x => x.Name.Equals(game));
                 if (role == null)
@@ -248,7 +247,7 @@ namespace Discocks.Modules
             Dictionary<string, Gamelist> gamelist = (Dictionary<string, Gamelist>)Session.Data["gamelist"];
             List<ulong> gamelistMessages = (List<ulong>)Session.Data["gamelistMessages"];
 
-            await PrintGamelistsAsync(gamelist, gamelistMessages);
+            await PrintGamelistsAsync(gamelist);
         }
 
         #endregion
@@ -258,7 +257,7 @@ namespace Discocks.Modules
         [Command("add")]
         [Alias("a")]
         [Summary("inserts an user to the playerlist")]
-        public async Task Add([Summary("The name of the game")]string game, [Summary("The user mention you want to add. (optional)")]IUser otherUser = null)
+        public async Task Add([Summary("The name or alias of the game")]string game, [Summary("The user mention or username you want to add")]IUser otherUser = null)
         {
             Init();
             Dictionary<string, Gamelist> gamelist = (Dictionary<string, Gamelist>)Session.Data["gamelist"];
@@ -275,11 +274,14 @@ namespace Discocks.Modules
                     gamelist.Add(g.Name, new Gamelist(g.Name));
                 }
 
-                if ((DateTime.Now - gamelist[g.Name].LastUpdated).Hours > 8)
+                foreach (KeyValuePair<string, Gamelist> entry in gamelist)
                 {
-                    gamelist[g.Name].Users.Clear();
-                    await ReplyAsync("", false, EmbedHelper.CreateBuilder($"Playerlist for '{g.Name}' cleared because it's older than 8 hours...", "Warning").Build());
-                }
+                    if ((DateTime.Now - entry.Value.LastUpdated).Hours > 8)
+                    {
+                        entry.Value.Users.Clear();
+                        await ReplyAsync("", false, EmbedHelper.CreateBuilder($"Playerlist for '{entry.Value.Name}' cleared because it's older than 8 hours...", "Warning").Build());
+                    }
+                }                
 
                 if (gamelist[g.Name].Users.FindIndex(x => x.Username == user?.Username) == -1)
                 {
@@ -287,7 +289,7 @@ namespace Discocks.Modules
                     gamelist[g.Name].LastUpdated = DateTime.Now;
                 }
 
-                await PrintGamelistsAsync(gamelist, gamelistMessages);
+                await PrintGamelistsAsync(gamelist);
             }
             else
             {
@@ -302,7 +304,7 @@ namespace Discocks.Modules
         [Command("remove")]
         [Alias("r")]
         [Summary("removes an user from playerlists")]
-        public async Task Remove([Summary("The name of the game")]string game, [Summary("The user you want to add. (optional)")]IUser otherUser = null)
+        public async Task Remove([Summary("The name or alias of the game")]string game, [Summary("The user mention or username you want to add")]IUser otherUser = null)
         {
             Init();
             Dictionary<string, Gamelist> gamelist = (Dictionary<string, Gamelist>)Session.Data["gamelist"];
@@ -325,7 +327,7 @@ namespace Discocks.Modules
                     gamelist.Remove(g.Name);
                 }
 
-                await PrintGamelistsAsync(gamelist, gamelistMessages);
+                await PrintGamelistsAsync(gamelist);
             }
         }
 
@@ -336,7 +338,7 @@ namespace Discocks.Modules
         [Command("clear")]
         [Alias("c")]
         [Summary("clears playerlist from game")]
-        public async Task Clear([Summary("The name of the game")]string game)
+        public async Task Clear([Summary("The name or alias of the game")]string game)
         {
             Init();
             Dictionary<string, Gamelist> gamelist = (Dictionary<string, Gamelist>)Session.Data["gamelist"];
@@ -355,7 +357,7 @@ namespace Discocks.Modules
                     gamelist.Remove(g.Name);
                 }
 
-                await PrintGamelistsAsync(gamelist, gamelistMessages);
+                await PrintGamelistsAsync(gamelist);
             }
         }
 
@@ -375,8 +377,10 @@ namespace Discocks.Modules
             }
         }
 
-        private async Task PrintGamelistsAsync(Dictionary<string, Gamelist> gamelist, List<ulong> gamelistMessages)
+        private async Task PrintGamelistsAsync(Dictionary<string, Gamelist> gamelist)
         {
+            List<ulong> gamelistMessages = (List<ulong>)Session.Data["gamelistMessages"];
+
             if (gamelistMessages.Count > 0)
             {
                 await Context.Channel.DeleteMessagesAsync(gamelistMessages);
@@ -396,14 +400,20 @@ namespace Discocks.Modules
 
                         if (!string.IsNullOrWhiteSpace(msg))
                         {
-                            await ReplyAsync("", false, EmbedHelper.CreateBuilder(msg, game.Key).Build());
+                            IUserMessage newMsg = await ReplyAsync("", false, EmbedHelper.CreateBuilder(msg, game.Key).Build());
+
+                            await Context.Message.DeleteAsync();
+                            ((List<ulong>)Session.Data["gamelistMessages"]).Add(newMsg.Id);
                         }
                     }
                 }
             }
             else
             {
-                await ReplyAsync("", false, EmbedHelper.CreateBuilder("Gamelist is empty!", "Warning").Build());
+                IUserMessage newMsg = await ReplyAsync("", false, EmbedHelper.CreateBuilder("Gamelist is empty!", "Warning").Build());
+
+                await Context.Message.DeleteAsync();
+                ((List<ulong>)Session.Data["gamelistMessages"]).Add(newMsg.Id);
             }
         }
 

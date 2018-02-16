@@ -1,9 +1,9 @@
 ﻿using Discocks.Helper;
+using Discocks.Models;
 using Discord;
 using Discord.Commands;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,7 +24,7 @@ namespace Discocks.Modules
         [Summary("prints help")]
         public async Task HelpAsync()
         {
-            string prefix = ConfigurationManager.AppSettings["Prefix"];
+            string prefix = Session.Config.Prefix;
             EmbedBuilder builder = EmbedHelper.CreateBuilder();
             builder.Description = "These are the commands you can use";
 
@@ -55,7 +55,7 @@ namespace Discocks.Modules
         [Command("help")]
         [Alias("h")]
         [Summary("prints help to command")]
-        public async Task HelpAsync(string command)
+        public async Task HelpAsync([Summary("The name of the command")]string command)
         {
             SearchResult result = _service.Search(Context, command);
 
@@ -65,7 +65,7 @@ namespace Discocks.Modules
                 return;
             }
 
-            string prefix = ConfigurationManager.AppSettings["Prefix"];
+            string prefix = Session.Config.Prefix;
             EmbedBuilder builder = EmbedHelper.CreateBuilder();
             builder.Description = $"Here are some commands like **{command}**";
 

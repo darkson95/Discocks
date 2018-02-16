@@ -1,11 +1,11 @@
-﻿using Discocks.Modules;
+﻿using Discocks.Models;
+using Discocks.Modules;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -40,8 +40,6 @@ namespace Discocks
             // Subscribe the logging handler to both the client and the CommandService.
             _client.Log += Logger;
             _commands.Log += Logger;
-
-            _client.SetGameAsync(ConfigurationManager.AppSettings["Game"]);
         }
 
         // Example of a logging handler. This can be re-used by addons
@@ -73,11 +71,15 @@ namespace Discocks
 
         private async Task MainAsync()
         {
+            await Config.LoadConfig();
+
+            await _client.SetGameAsync(Session.Config.Game);
+
             // Centralize the logic for commands into a seperate method.
             await InitCommands();
 
             // Login and connect.
-            await _client.LoginAsync(TokenType.Bot, ConfigurationManager.AppSettings["BotToken"]);
+            await _client.LoginAsync(TokenType.Bot, Session.Config.BotToken);
             await _client.StartAsync();
 
             // Wait infinitely so your bot actually stays connected.
@@ -110,7 +112,7 @@ namespace Discocks
 
             // Create a number to track where the prefix ends and the command begins
             int pos = 0;
-            if (msg.HasCharPrefix(ConfigurationManager.AppSettings["Prefix"][0], ref pos))
+            if (msg.HasCharPrefix(Session.Config.Prefix[0], ref pos))
             {
                 // Create a Command Context.
                 var context = new SocketCommandContext(_client, msg);
@@ -122,7 +124,7 @@ namespace Discocks
                 if (!result.IsSuccess && result.Error != CommandError.UnknownCommand)
                     await msg.Channel.SendMessageAsync(result.ErrorReason);
             }
-            else if (msg.Channel.Name.Equals(ConfigurationManager.AppSettings["MusicChannel"]))
+            else if (msg.Channel.Name.Equals(Session.Config.MusicChannel))
             {
                 YoutubeModule ytm = new YoutubeModule();
                 await ytm.Add(msg.Content);

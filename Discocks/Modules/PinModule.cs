@@ -4,16 +4,10 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Upload;
-using Google.Apis.Util.Store;
-using Google.Apis.YouTube.v3;
-using Google.Apis.YouTube.v3.Data;
+using Discocks.Models;
 
 namespace Discocks.Modules
 {
@@ -22,7 +16,7 @@ namespace Discocks.Modules
         [Command("pin")]
         [Alias("p")]
         [Summary("copies the message to the PinnedChannel")]
-        private async Task Pin(ulong id, bool quote = false)
+        private async Task Pin([Summary("The id of the message you want to pin")]ulong id, [Summary("If true the message will be quoted from the author")]bool quote = false)
         {
             await PinMessage(id, quote);
         }
@@ -30,7 +24,7 @@ namespace Discocks.Modules
 
         private async Task<IText​Channel> GetPinnedChannel()
         {
-            string pinned = ConfigurationManager.AppSettings["PinnedChannel"];
+            string pinned = Session.Config.PinnedChannel;
 
             IText​Channel pinnedChannel = Context.Guild.TextChannels.ToList().Find(x => x.Name.Equals(pinned));
 
