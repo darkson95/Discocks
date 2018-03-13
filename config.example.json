@@ -1,0 +1,13 @@
+{
+	"token" : "YOUR DISCORD BOT TOKEN",
+	"mail" : "YOUR CONTACT MAIL",
+	"repo" : "YOUR SOURCE REPOSITORY",
+	"pinnedID" : "YOUR PINNED TEXTCHANNEL ID",
+	"youtube": {
+		"playlistId" : "YOUR YOUTUBE PLAYLISTID",
+		"refreshToken" : "YOUR YOUTUBE REFRESHTOKEN",
+		"clientId" : "YOUR YOUTUBE CLIENTID",
+		"clientSecret" : "YOUR YOUTUBE clientSecret",
+		"redirectUrl" : "YOUR YOUTUBE REDIRECTURL"
+	}
+}

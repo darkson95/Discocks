@@ -1,0 +1,21 @@
+{
+  "name": "discocks",
+  "version": "1.5.0",
+  "description": "A Discord Bot",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "darkson95",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darkson95/Discocks.git"
+  },
+  "dependencies": {
+    "discord.js": "^10.0.1",
+    "humanize-duration": "^3.9.1",
+    "string-argv": "0.0.2",
+    "youtube-api": "^2.0.4"
+  }
+}
